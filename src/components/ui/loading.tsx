@@ -80,4 +80,6 @@ export function PageSkeleton() {
   );
 }
 
+// Aliases for convenience
+export { Spinner as LoadingSpinner };
 export default Spinner;
