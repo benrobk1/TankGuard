@@ -1,0 +1,528 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================
+// AUTH MODELS
+// ============================================
+
+model User {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  passwordHash   String    @map("password_hash")
+  name           String?
+  emailVerified  DateTime? @map("email_verified")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  customer   Customer?
+  sessions   Session[]
+
+  @@map("users")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id")
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+// ============================================
+// CORE BUSINESS MODELS
+// ============================================
+
+model State {
+  id                String  @id @default(cuid())
+  name              String
+  abbreviation      String  @unique @db.VarChar(2)
+  regulatoryAgency  String? @map("regulatory_agency")
+  ustProgramUrl     String? @map("ust_program_url")
+  hasOwnRequirements Boolean @default(true) @map("has_own_requirements")
+  agencyPhone       String? @map("agency_phone")
+  agencyEmail       String? @map("agency_email")
+  penaltyInfo       String? @map("penalty_info") @db.Text
+  notes             String? @db.Text
+
+  complianceRules   ComplianceRule[]
+  facilities        Facility[]
+
+  @@map("states")
+}
+
+model Customer {
+  id                String   @id @default(cuid())
+  userId            String   @unique @map("user_id")
+  companyName       String   @map("company_name")
+  email             String
+  phone             String?
+  stripeCustomerId  String?  @unique @map("stripe_customer_id")
+  stripeSubscriptionId String? @unique @map("stripe_subscription_id")
+  facilityCount     Int      @default(0) @map("facility_count")
+  status            CustomerStatus @default(TRIAL)
+  onboardingStep    Int      @default(1) @map("onboarding_step")
+  onboardingComplete Boolean @default(false) @map("onboarding_complete")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  facilities Facility[]
+  reminders  Reminder[]
+
+  @@map("customers")
+}
+
+enum CustomerStatus {
+  TRIAL
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+  SUSPENDED
+}
+
+model Facility {
+  id                 String       @id @default(cuid())
+  customerId         String       @map("customer_id")
+  name               String
+  address            String
+  city               String
+  stateId            String       @map("state_id")
+  zip                String       @db.VarChar(10)
+  registrationNumber String?      @map("registration_number")
+  facilityType       FacilityType @default(GAS_STATION) @map("facility_type")
+  contactName        String?      @map("contact_name")
+  contactPhone       String?      @map("contact_phone")
+  contactEmail       String?      @map("contact_email")
+  latitude           Float?
+  longitude          Float?
+  createdAt          DateTime     @default(now()) @map("created_at")
+  updatedAt          DateTime     @updatedAt @map("updated_at")
+
+  customer        Customer         @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  state           State            @relation(fields: [stateId], references: [id])
+  tanks           Tank[]
+  operators       Operator[]
+  inspections     Inspection[]
+  complianceItems ComplianceItem[]
+  documents       Document[]
+  reminders       Reminder[]
+
+  @@map("facilities")
+}
+
+enum FacilityType {
+  GAS_STATION
+  FLEET_FUELING
+  HEATING_OIL
+  MARINA
+  AIRPORT
+  GOVERNMENT
+  OTHER
+}
+
+model Tank {
+  id                     String          @id @default(cuid())
+  facilityId             String          @map("facility_id")
+  tankNumber             String          @map("tank_number")
+  capacityGallons        Int             @map("capacity_gallons")
+  material               TankMaterial
+  productStored          ProductType     @map("product_stored")
+  installationDate       DateTime?       @map("installation_date")
+  lastUpgradeDate        DateTime?       @map("last_upgrade_date")
+  leakDetectionMethod    LeakDetection   @map("leak_detection_method")
+  spillPreventionType    String?         @map("spill_prevention_type")
+  overfillPreventionType String?         @map("overfill_prevention_type")
+  corrosionProtectionType CorrosionProtection? @map("corrosion_protection_type")
+  hasSecondaryContainment Boolean        @default(false) @map("has_secondary_containment")
+  hasContainmentSumps    Boolean         @default(false) @map("has_containment_sumps")
+  status                 TankStatus      @default(ACTIVE)
+  createdAt              DateTime        @default(now()) @map("created_at")
+  updatedAt              DateTime        @updatedAt @map("updated_at")
+
+  facility        Facility         @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  inspections     Inspection[]
+  complianceItems ComplianceItem[]
+  documents       Document[]
+
+  @@map("tanks")
+}
+
+enum ProductType {
+  REGULAR_GASOLINE
+  PREMIUM_GASOLINE
+  MIDGRADE_GASOLINE
+  DIESEL
+  KEROSENE
+  HEATING_OIL
+  USED_OIL
+  AVIATION_FUEL
+  E85
+  DEF
+  OTHER
+}
+
+enum TankMaterial {
+  FIBERGLASS
+  STEEL
+  STEEL_WITH_FRP
+  COMPOSITE
+  DOUBLE_WALL_FIBERGLASS
+  DOUBLE_WALL_STEEL
+  OTHER
+}
+
+enum LeakDetection {
+  ATG
+  SIR
+  MANUAL_GAUGING
+  GROUNDWATER_MONITORING
+  VAPOR_MONITORING
+  INTERSTITIAL_MONITORING
+  OTHER
+}
+
+enum CorrosionProtection {
+  CATHODIC_PROTECTION
+  FIBERGLASS_NO_CP_NEEDED
+  INTERNAL_LINING
+  COMPOSITE
+  NONE
+}
+
+enum TankStatus {
+  ACTIVE
+  TEMPORARILY_CLOSED
+  PERMANENTLY_CLOSED
+  CHANGE_IN_SERVICE
+}
+
+model Operator {
+  id                       String        @id @default(cuid())
+  facilityId               String        @map("facility_id")
+  name                     String
+  operatorClass            OperatorClass @map("operator_class")
+  certificationDate        DateTime?     @map("certification_date")
+  certificationExpiration  DateTime?     @map("certification_expiration")
+  trainingProvider         String?       @map("training_provider")
+  certificateUrl           String?       @map("certificate_url")
+  email                    String?
+  phone                    String?
+  createdAt                DateTime      @default(now()) @map("created_at")
+  updatedAt                DateTime      @updatedAt @map("updated_at")
+
+  facility Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+
+  @@map("operators")
+}
+
+enum OperatorClass {
+  CLASS_A
+  CLASS_B
+  CLASS_C
+}
+
+// ============================================
+// COMPLIANCE MODELS
+// ============================================
+
+model ComplianceRule {
+  id             String          @id @default(cuid())
+  stateId        String?         @map("state_id")
+  ruleSource     RuleSource      @map("rule_source")
+  equipmentType  String?         @map("equipment_type")
+  inspectionType String          @map("inspection_type")
+  frequencyMonths Int?           @map("frequency_months")
+  frequencyDays  Int?            @map("frequency_days")
+  description    String          @db.Text
+  citation       String?
+  effectiveDate  DateTime?       @map("effective_date")
+  notes          String?         @db.Text
+  category       RuleCategory    @default(INSPECTION)
+  appliesToMaterial    String?   @map("applies_to_material")
+  appliesToLeakDetection String? @map("applies_to_leak_detection")
+  appliesToCorrosionProtection String? @map("applies_to_corrosion_protection")
+  isActive       Boolean         @default(true) @map("is_active")
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+
+  state           State?          @relation(fields: [stateId], references: [id])
+  complianceItems ComplianceItem[]
+
+  @@map("compliance_rules")
+}
+
+enum RuleSource {
+  EPA
+  STATE
+}
+
+enum RuleCategory {
+  INSPECTION
+  TESTING
+  CERTIFICATION
+  TRAINING
+  DOCUMENTATION
+  REPORTING
+  FINANCIAL
+  CLOSURE
+}
+
+model ComplianceItem {
+  id             String           @id @default(cuid())
+  facilityId     String           @map("facility_id")
+  tankId         String?          @map("tank_id")
+  ruleId         String           @map("rule_id")
+  itemType       ComplianceItemType @map("item_type")
+  description    String           @db.Text
+  dueDate        DateTime         @map("due_date")
+  status         ComplianceStatus @default(UPCOMING)
+  completedDate  DateTime?        @map("completed_date")
+  completedBy    String?          @map("completed_by")
+  documentUrl    String?          @map("document_url")
+  reminderSentCount Int           @default(0) @map("reminder_sent_count")
+  lastReminderSent DateTime?      @map("last_reminder_sent")
+  notes          String?          @db.Text
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+
+  facility  Facility       @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  tank      Tank?          @relation(fields: [tankId], references: [id], onDelete: Cascade)
+  rule      ComplianceRule @relation(fields: [ruleId], references: [id])
+  documents Document[]
+  reminders Reminder[]
+
+  @@index([facilityId, status])
+  @@index([dueDate])
+  @@index([status])
+  @@map("compliance_items")
+}
+
+enum ComplianceItemType {
+  INSPECTION
+  TEST
+  CERTIFICATION
+  TRAINING
+  DOCUMENTATION
+}
+
+enum ComplianceStatus {
+  UPCOMING
+  DUE_SOON
+  OVERDUE
+  COMPLETED
+  WAIVED
+}
+
+model Inspection {
+  id               String           @id @default(cuid())
+  tankId           String?          @map("tank_id")
+  facilityId       String           @map("facility_id")
+  inspectionType   String           @map("inspection_type")
+  dueDate          DateTime?        @map("due_date")
+  completedDate    DateTime?        @map("completed_date")
+  inspectorName    String?          @map("inspector_name")
+  inspectorCompany String?          @map("inspector_company")
+  result           InspectionResult?
+  reportUrl        String?          @map("report_url")
+  notes            String?          @db.Text
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
+
+  tank     Tank?    @relation(fields: [tankId], references: [id], onDelete: Cascade)
+  facility Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+
+  @@map("inspections")
+}
+
+enum InspectionResult {
+  PASS
+  FAIL
+  NEEDS_FOLLOWUP
+  PENDING
+}
+
+model Document {
+  id               String       @id @default(cuid())
+  facilityId       String       @map("facility_id")
+  tankId           String?      @map("tank_id")
+  complianceItemId String?      @map("compliance_item_id")
+  documentType     DocumentType @map("document_type")
+  fileName         String       @map("file_name")
+  fileUrl          String       @map("file_url")
+  fileSize         Int?         @map("file_size")
+  mimeType         String?      @map("mime_type")
+  uploadDate       DateTime     @default(now()) @map("upload_date")
+  expirationDate   DateTime?    @map("expiration_date")
+  notes            String?      @db.Text
+  createdAt        DateTime     @default(now()) @map("created_at")
+  updatedAt        DateTime     @updatedAt @map("updated_at")
+
+  facility       Facility        @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  tank           Tank?           @relation(fields: [tankId], references: [id], onDelete: Cascade)
+  complianceItem ComplianceItem? @relation(fields: [complianceItemId], references: [id], onDelete: SetNull)
+
+  @@map("documents")
+}
+
+enum DocumentType {
+  INSPECTION_REPORT
+  CERTIFICATE
+  TRAINING_RECORD
+  FINANCIAL_RESPONSIBILITY
+  RELEASE_DETECTION
+  CLOSURE_REPORT
+  PERMIT
+  REGISTRATION
+  CORRESPONDENCE
+  PHOTO
+  OTHER
+}
+
+model Reminder {
+  id               String       @id @default(cuid())
+  complianceItemId String       @map("compliance_item_id")
+  facilityId       String       @map("facility_id")
+  customerId       String       @map("customer_id")
+  reminderType     ReminderType @map("reminder_type")
+  sentDate         DateTime?    @map("sent_date")
+  channel          ReminderChannel @default(DASHBOARD)
+  status           ReminderStatus @default(PENDING)
+  createdAt        DateTime     @default(now()) @map("created_at")
+
+  complianceItem ComplianceItem @relation(fields: [complianceItemId], references: [id], onDelete: Cascade)
+  facility       Facility       @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  customer       Customer       @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@map("reminders")
+}
+
+enum ReminderType {
+  NINETY_DAY
+  SIXTY_DAY
+  THIRTY_DAY
+  SEVEN_DAY
+  OVERDUE
+  WEEKLY_DIGEST
+}
+
+enum ReminderChannel {
+  EMAIL
+  DASHBOARD
+  BOTH
+}
+
+enum ReminderStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+// ============================================
+// PROSPECT / SCRAPER MODELS
+// ============================================
+
+model ProspectFacility {
+  id                 String   @id @default(cuid())
+  state              String   @db.VarChar(2)
+  facilityName       String   @map("facility_name")
+  ownerName          String?  @map("owner_name")
+  address            String?
+  city               String?
+  zip                String?  @db.VarChar(10)
+  phone              String?
+  email              String?
+  tankCount          Int?     @map("tank_count")
+  tankTypes          String?  @map("tank_types")
+  productsStored     String?  @map("products_stored")
+  installationDates  String?  @map("installation_dates")
+  registrationNumber String?  @map("registration_number")
+  complianceStatus   String?  @map("compliance_status")
+  sourceUrl          String?  @map("source_url")
+  scrapedAt          DateTime @default(now()) @map("scraped_at")
+  outreachStatus     ProspectStatus @default(NEW) @map("outreach_status")
+  outreachSentCount  Int      @default(0) @map("outreach_sent_count")
+  lastOutreachDate   DateTime? @map("last_outreach_date")
+  notes              String?  @db.Text
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  @@index([state])
+  @@index([outreachStatus])
+  @@map("prospect_facilities")
+}
+
+enum ProspectStatus {
+  NEW
+  CONTACTED
+  REPLIED
+  CONVERTED
+  UNSUBSCRIBED
+  BOUNCED
+}
+
+// ============================================
+// BLOG / CONTENT MODELS
+// ============================================
+
+model BlogPost {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  excerpt     String?  @db.Text
+  content     String   @db.Text
+  author      String   @default("TankGuard Team")
+  category    String?
+  tags        String[] @default([])
+  published   Boolean  @default(false)
+  publishedAt DateTime? @map("published_at")
+  metaTitle   String?  @map("meta_title")
+  metaDescription String? @map("meta_description") @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("blog_posts")
+}
+
+// ============================================
+// SYSTEM / MONITORING MODELS
+// ============================================
+
+model SystemEvent {
+  id        String   @id @default(cuid())
+  eventType String   @map("event_type")
+  severity  EventSeverity @default(INFO)
+  message   String   @db.Text
+  metadata  Json?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([eventType])
+  @@index([createdAt])
+  @@map("system_events")
+}
+
+enum EventSeverity {
+  INFO
+  WARNING
+  ERROR
+  CRITICAL
+}
+
+model EarlyAccessSignup {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  tankCount Int?     @map("tank_count")
+  state     String?  @db.VarChar(2)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("early_access_signups")
+}
