@@ -27,12 +27,41 @@ export async function generateComplianceSchedule(facilityId: string): Promise<vo
   // Combine state + federal rules
   const allRules = [...federalRules, ...facility.state.complianceRules];
 
+  // Equipment types that apply at the facility level (one item per facility, not per tank).
+  // OPERATOR: training, certification, retraining — applies to people, not individual tanks.
+  // FINANCIAL: tank fees, insurance, fund participation — one obligation per facility.
+  const FACILITY_LEVEL_EQUIPMENT = new Set(['OPERATOR', 'FINANCIAL']);
+
   for (const rule of allRules) {
     if (!rule.frequencyMonths && !rule.frequencyDays) {
       continue; // Skip one-time / as-needed rules for automatic scheduling
     }
 
-    // Determine which tanks this rule applies to
+    const isFacilityLevel = FACILITY_LEVEL_EQUIPMENT.has(rule.equipmentType ?? '');
+
+    // Facility-level rules: create one item per facility (not per tank)
+    if (isFacilityLevel) {
+      const existing = await prisma.complianceItem.findFirst({
+        where: { facilityId, ruleId: rule.id, tankId: null, status: { not: 'COMPLETED' } },
+      });
+
+      if (!existing) {
+        const dueDate = calculateDueDate(rule.frequencyMonths, rule.frequencyDays);
+        await prisma.complianceItem.create({
+          data: {
+            facilityId,
+            ruleId: rule.id,
+            itemType: mapCategoryToItemType(rule.category),
+            description: rule.description,
+            dueDate,
+            status: 'UPCOMING',
+          },
+        });
+      }
+      continue;
+    }
+
+    // Tank-specific rules: determine which tanks this rule applies to
     const applicableTanks = facility.tanks.filter((tank) => {
       if (rule.appliesToMaterial && tank.material !== rule.appliesToMaterial) return false;
       if (rule.appliesToLeakDetection && tank.leakDetectionMethod !== rule.appliesToLeakDetection) return false;
@@ -40,7 +69,7 @@ export async function generateComplianceSchedule(facilityId: string): Promise<vo
       return true;
     });
 
-    // For facility-level rules (no equipment-specific filter), create one item
+    // If no tanks match but rule has no filters, create one facility-level item
     if (applicableTanks.length === 0 && !rule.appliesToMaterial && !rule.appliesToLeakDetection && !rule.appliesToCorrosionProtection) {
       const existing = await prisma.complianceItem.findFirst({
         where: { facilityId, ruleId: rule.id, tankId: null, status: { not: 'COMPLETED' } },
@@ -61,7 +90,7 @@ export async function generateComplianceSchedule(facilityId: string): Promise<vo
       }
     }
 
-    // For tank-specific rules, create one item per applicable tank
+    // For each matching tank, create one item per tank
     for (const tank of applicableTanks) {
       const existing = await prisma.complianceItem.findFirst({
         where: { facilityId, ruleId: rule.id, tankId: tank.id, status: { not: 'COMPLETED' } },
