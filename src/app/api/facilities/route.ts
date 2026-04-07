@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { generateComplianceSchedule } from '@/lib/compliance/scheduling';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const session = await getSession();
     if (!session) {
@@ -15,10 +15,14 @@ export async function GET() {
       return NextResponse.json({ error: 'No customer profile' }, { status: 400 });
     }
 
+    const { searchParams } = new URL(request.url);
+    const includeTanks = searchParams.get('includeTanks') === 'true';
+
     const facilities = await prisma.facility.findMany({
       where: { customerId },
       include: {
         state: true,
+        tanks: includeTanks ? { select: { id: true, tankNumber: true }, orderBy: { tankNumber: 'asc' } } : false,
         _count: {
           select: { tanks: true },
         },
@@ -41,7 +45,7 @@ export async function GET() {
       };
       const { complianceItems, ...rest } = facility;
       return { ...rest, tankCount: facility._count.tanks, complianceSummary };
-    });
+    }) as Array<Record<string, unknown>>;
 
     return NextResponse.json({ facilities: result });
   } catch (error) {

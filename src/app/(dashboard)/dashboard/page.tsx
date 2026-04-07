@@ -3,6 +3,7 @@
 import { useFetch } from '@/lib/hooks';
 import { LoadingSpinner } from '@/components/ui/loading';
 import { Badge } from '@/components/ui/badge';
+import { ComplianceTrendChart } from '@/components/compliance/trend-chart';
 
 interface DashboardData {
   summary: {
@@ -20,6 +21,7 @@ interface DashboardData {
     description: string;
     dueDate: string;
     status: string;
+    itemType: string;
     facility: { name: string };
     tank?: { tankNumber: string } | null;
   }>;
@@ -28,6 +30,7 @@ interface DashboardData {
     description: string;
     dueDate: string;
     status: string;
+    itemType: string;
     facility: { name: string };
     tank?: { tankNumber: string } | null;
   }>;
@@ -42,6 +45,7 @@ interface DashboardData {
     name: string;
     city: string;
     _count: { tanks: number; complianceItems: number };
+    complianceSummary?: { total: number; completed: number; overdue: number };
   }>;
 }
 
@@ -61,9 +65,49 @@ function formatDate(d: string) {
   return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
+async function downloadAuditPdf(facilityId: string) {
+  try {
+    const res = await fetch('/api/reports/audit/pdf', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ facilityId }),
+    });
+    if (!res.ok) throw new Error('Failed to generate PDF');
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = res.headers.get('Content-Disposition')?.split('filename="')[1]?.replace('"', '') || 'audit-report.pdf';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error('PDF download error:', err);
+  }
+}
+
 function daysUntil(d: string) {
   const diff = Math.ceil((new Date(d).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
   return diff;
+}
+
+const TYPE_LABELS: Record<string, string> = {
+  INSPECTION: 'Inspection', TEST: 'Test', CERTIFICATION: 'Certification', TRAINING: 'Training',
+  DOCUMENTATION: 'Documentation', REPORTING: 'Reporting', FINANCIAL: 'Financial', CLOSURE: 'Closure',
+};
+
+function isCriticalType(itemType: string) {
+  return itemType === 'REPORTING' || itemType === 'FINANCIAL';
+}
+
+function TypeBadge({ type }: { type: string }) {
+  const critical = isCriticalType(type);
+  return (
+    <span className={`text-xs font-semibold px-1.5 py-0.5 rounded ${critical ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-600'}`}>
+      {TYPE_LABELS[type] || type}
+    </span>
+  );
 }
 
 export default function DashboardPage() {
@@ -97,6 +141,43 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      {/* Priority Actions — what the operator should do RIGHT NOW */}
+      {(summary.overdue > 0 || summary.dueSoon > 0) && (
+        <div className="bg-white rounded-lg border-2 border-blue-300 p-5">
+          <h2 className="text-lg font-bold text-gray-900 mb-3">What You Need To Do</h2>
+          <div className="space-y-2">
+            {summary.overdue > 0 && (
+              <div className="flex items-center gap-3 bg-red-50 rounded-lg px-4 py-3">
+                <span className="text-red-600 text-2xl font-bold">{summary.overdue}</span>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-red-800">
+                    {summary.overdue === 1 ? 'item is' : 'items are'} overdue
+                  </p>
+                  <p className="text-xs text-red-600">Overdue items may result in fines or delivery prohibition</p>
+                </div>
+                <a href="/compliance?status=OVERDUE" className="text-sm font-semibold text-red-700 bg-red-100 px-3 py-1.5 rounded-md hover:bg-red-200 transition-colors shrink-0">
+                  Fix Now
+                </a>
+              </div>
+            )}
+            {summary.dueSoon > 0 && (
+              <div className="flex items-center gap-3 bg-yellow-50 rounded-lg px-4 py-3">
+                <span className="text-yellow-600 text-2xl font-bold">{summary.dueSoon}</span>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-yellow-800">
+                    {summary.dueSoon === 1 ? 'item' : 'items'} due soon
+                  </p>
+                  <p className="text-xs text-yellow-600">Schedule these before they become overdue</p>
+                </div>
+                <a href="/compliance?status=DUE_SOON" className="text-sm font-semibold text-yellow-700 bg-yellow-100 px-3 py-1.5 rounded-md hover:bg-yellow-200 transition-colors shrink-0">
+                  View All
+                </a>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
@@ -112,6 +193,9 @@ export default function DashboardPage() {
         ))}
       </div>
 
+      {/* Compliance Trend Chart */}
+      <ComplianceTrendChart />
+
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Overdue Items */}
         {data.overdueItems.length > 0 && (
@@ -121,12 +205,18 @@ export default function DashboardPage() {
             </div>
             <div className="divide-y divide-gray-100">
               {data.overdueItems.slice(0, 10).map((item) => (
-                <div key={item.id} className="px-4 py-3 flex items-center justify-between">
+                <div key={item.id} className={`px-4 py-3 flex items-center justify-between ${isCriticalType(item.itemType) ? 'bg-red-50' : ''}`}>
                   <div>
-                    <p className="text-sm font-medium text-gray-900">{item.description}</p>
-                    <p className="text-xs text-gray-500">{item.facility.name}{item.tank ? ` - Tank ${item.tank.tankNumber}` : ''}</p>
+                    <p className="text-sm font-medium text-gray-900">
+                      <TypeBadge type={item.itemType} />{' '}
+                      {item.description}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {item.facility.name}
+                      {item.tank ? ` - Tank ${item.tank.tankNumber}` : ' (Facility-wide)'}
+                    </p>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right shrink-0 ml-4">
                     <Badge variant="danger">{Math.abs(daysUntil(item.dueDate))} days overdue</Badge>
                   </div>
                 </div>
@@ -147,10 +237,16 @@ export default function DashboardPage() {
               data.upcomingItems.slice(0, 7).map((item) => {
                 const days = daysUntil(item.dueDate);
                 return (
-                  <div key={item.id} className="px-4 py-3 flex items-center justify-between">
+                  <div key={item.id} className={`px-4 py-3 flex items-center justify-between ${isCriticalType(item.itemType) && days <= 7 ? 'bg-red-50' : ''}`}>
                     <div>
-                      <p className="text-sm font-medium text-gray-900">{item.description}</p>
-                      <p className="text-xs text-gray-500">{item.facility.name}</p>
+                      <p className="text-sm font-medium text-gray-900">
+                        <TypeBadge type={item.itemType} />{' '}
+                        {item.description}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {item.facility.name}
+                        {item.tank ? ` - Tank ${item.tank.tankNumber}` : ''}
+                      </p>
                     </div>
                     <div className="text-right shrink-0 ml-4">
                       <p className="text-sm text-gray-700">{formatDate(item.dueDate)}</p>
@@ -197,17 +293,36 @@ export default function DashboardPage() {
           {data.facilities.length === 0 ? (
             <p className="px-4 py-6 text-sm text-gray-500 text-center">No facilities added yet</p>
           ) : (
-            data.facilities.map((f) => (
-              <a key={f.id} href={`/facilities/${f.id}`} className="px-4 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors block">
-                <div>
-                  <p className="text-sm font-medium text-gray-900">{f.name}</p>
-                  <p className="text-xs text-gray-500">{f.city}</p>
+            data.facilities.map((f) => {
+              const cs = f.complianceSummary;
+              const facilityScore = cs && cs.total > 0 ? Math.round((cs.completed / cs.total) * 100) : null;
+              const scoreColor = facilityScore === null ? 'text-gray-400' : facilityScore >= 80 ? 'text-green-600' : facilityScore >= 50 ? 'text-yellow-600' : 'text-red-600';
+              return (
+                <div key={f.id} className="px-4 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                  <a href={`/facilities/${f.id}`} className="flex-1">
+                    <p className="text-sm font-medium text-gray-900">{f.name}</p>
+                    <p className="text-xs text-gray-500">{f.city} &middot; {f._count.tanks} tanks</p>
+                  </a>
+                  <div className="flex items-center gap-4">
+                    {facilityScore !== null && (
+                      <div className="text-right">
+                        <p className={`text-lg font-bold ${scoreColor}`}>{facilityScore}%</p>
+                        {cs && cs.overdue > 0 && (
+                          <p className="text-xs text-red-500">{cs.overdue} overdue</p>
+                        )}
+                      </div>
+                    )}
+                    <button
+                      onClick={() => downloadAuditPdf(f.id)}
+                      className="text-xs text-blue-600 hover:text-blue-800 font-medium px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+                      title="Download audit report PDF"
+                    >
+                      PDF
+                    </button>
+                  </div>
                 </div>
-                <div className="text-right text-sm text-gray-500">
-                  {f._count.tanks} tanks &middot; {f._count.complianceItems} items
-                </div>
-              </a>
-            ))
+              );
+            })
           )}
         </div>
       </div>

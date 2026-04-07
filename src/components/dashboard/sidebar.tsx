@@ -15,6 +15,7 @@ import {
   Menu,
   X,
   Shield,
+  HelpCircle,
 } from 'lucide-react';
 
 const navItems = [
@@ -74,6 +75,17 @@ export default function Sidebar({ companyName, userEmail }: SidebarProps) {
           );
         })}
       </nav>
+
+      {/* Help & Support */}
+      <div className="px-3 pb-2">
+        <a
+          href="/support"
+          className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+        >
+          <HelpCircle className="h-5 w-5 shrink-0" />
+          Help &amp; Support
+        </a>
+      </div>
 
       {/* User info + logout */}
       <div className="border-t border-gray-200 px-4 py-4 space-y-3">
