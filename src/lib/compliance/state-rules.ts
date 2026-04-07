@@ -167,6 +167,14 @@ export const stateRules: Record<string, StateRule[]> = {
       'Annual recordkeeping audit. Verify on-site availability of: installation records, release detection records (min. 12 months), CP test records, financial responsibility docs, repair records, training certificates, compliance inspection results, and testing reports.',
       '30 TAC 334',
       { equipmentType: 'TANK', notes: 'TCEQ requires records per 40 CFR 280.34. State may require longer retention.' }),
+    rule('STATE_TX_STAGE_II_DECOMMISSION', 'REPORTING', null,
+      'Stage II vapor recovery system decommissioning notification. Notify state agency before removing or deactivating Stage II vapor recovery equipment. Post-decommissioning: install and test pressure/vacuum (P/V) vent caps, verify Stage I vapor recovery remains operational, document decommissioning work performed.',
+      '30 TAC 115.246',
+      { equipmentType: 'SPILL_PREVENTION', notes: 'TCEQ requires notification before Stage II decommissioning. Post-decommission Stage I testing still required.' }),
+    rule('STATE_TX_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to TCEQ, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── CALIFORNIA (SWRCB / CUPAs) ────────────────────────────────────────
@@ -301,6 +309,30 @@ export const stateRules: Record<string, StateRule[]> = {
       'Annual recordkeeping audit. Verify on-site availability of: installation records, release detection records (min. 12 months), CP test records, financial responsibility docs, repair records, training certificates, compliance inspection results, and testing reports.',
       'CCR Title 23 §2600',
       { equipmentType: 'TANK', notes: 'SWRCB requires records per 40 CFR 280.34. State may require longer retention.' }),
+    rule('STATE_CA_CUPA_OPERATING_PERMIT', 'CERTIFICATION', 12,
+      'Annual CUPA (Certified Unified Program Agency) operating permit renewal. Every UST facility in California must obtain and maintain an annual operating permit from the local CUPA. Permit fees vary by jurisdiction (~80+ CUPAs statewide). Operating without current permit is a violation with daily penalties.',
+      'HSC 25284; CCR Title 23, Div 3, Ch 16',
+      { equipmentType: 'TANK', notes: 'California-specific requirement. Each county/city CUPA has separate fee schedules and inspection cadences. Apply for renewal 60-90 days before expiration.' }),
+    rule('STATE_CA_SINGLE_WALL_COMPLIANCE', 'CERTIFICATION', null,
+      'Single-walled UST and piping compliance verification. All single-walled tanks and piping must have been permanently closed or upgraded to secondary containment by December 31, 2025. Verify all systems meet double-wall or secondary containment requirements. Facilities with non-compliant single-wall systems face mandatory closure orders.',
+      'HSC 25291(a); SB 445',
+      { equipmentType: 'TANK', notes: 'Critical California deadline. Non-compliant single-wall systems subject to forced closure and penalties. Verify all tanks and piping meet secondary containment requirements.' }),
+    rule('STATE_CA_UST_CLEANUP_FUND_FEE', 'FINANCIAL', 12,
+      'Annual UST Cleanup Fund participation fee. Facilities must pay annual storage fee per tank to maintain eligibility for state-funded cleanup assistance. Fund eligibility requires compliance at time of claim filing. Non-participation requires alternative financial responsibility (private insurance at $1M/$2M levels).',
+      'HSC 25299.40-25299.65',
+      { equipmentType: 'FINANCIAL', notes: 'California UST Cleanup Fund. Annual fee per tank. Compliance with all UST regulations required for claim eligibility. Critical financial protection.' }),
+    rule('STATE_CA_HAZ_CONTRACTOR_CERTIFICATION', 'CERTIFICATION', 24,
+      'UST service contractor HAZ certification verification. All contractors performing UST installation, repair, removal, or testing must hold valid Contractors State License Board (CSLB) HAZ certification. Verify contractor credentials before authorizing any UST work. Invalid contractor work may be voided by regulators.',
+      'Bus. & Prof. Code 7058.7; CCR Title 23 §2715',
+      { equipmentType: 'OPERATOR', notes: 'California requires HAZ-certified contractors for all UST work. Verify CSLB license status before engaging contractors. Certification renewal every 2 years.' }),
+    rule('STATE_CA_ENHANCED_LEAK_DETECTION_SENSITIVE_AREAS', 'TESTING', 6,
+      'Enhanced leak detection for USTs in sensitive receptor areas (within 1,000 feet of public water supply well, near surface water, or in groundwater basin). Semi-annual continuous monitoring verification, enhanced secondary containment testing, and accelerated response timelines for any monitoring anomalies.',
+      'CCR Title 23 §2631-2632; Water Code 13267',
+      { equipmentType: 'RELEASE_DETECTION', notes: 'California requires enhanced monitoring near drinking water sources. Applies to facilities in sensitive receptor areas. More frequent than standard federal monitoring.' }),
+    rule('STATE_CA_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to Cal OES, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── FLORIDA (DEP) ─────────────────────────────────────────────────────
@@ -423,6 +455,14 @@ export const stateRules: Record<string, StateRule[]> = {
       'Annual recordkeeping audit. Verify on-site availability of: installation records, release detection records (min. 12 months), CP test records, financial responsibility docs, repair records, training certificates, compliance inspection results, and testing reports.',
       'FAC 62-761',
       { equipmentType: 'TANK', notes: 'DEP requires records per 40 CFR 280.34. State may require longer retention.' }),
+    rule('STATE_FL_SENSITIVE_AREA_MONITORING', 'INSPECTION', 6,
+      'Enhanced monitoring for UST facilities in sensitive receptor areas (wellhead protection zones, near surface water, critical aquifer recharge areas). Semi-annual enhanced release detection verification, accelerated response timelines, and additional groundwater monitoring may be required.',
+      'FAC 62-761.510(3)',
+      { equipmentType: 'RELEASE_DETECTION', notes: 'DEP requires enhanced monitoring for USTs in wellhead protection areas. More frequent monitoring than standard facilities.' }),
+    rule('STATE_FL_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to DEP, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── NEW YORK (DEC) ────────────────────────────────────────────────────
@@ -549,6 +589,26 @@ export const stateRules: Record<string, StateRule[]> = {
       'Annual recordkeeping audit. Verify on-site availability of: installation records, release detection records (min. 12 months), CP test records, financial responsibility docs, repair records, training certificates, compliance inspection results, and testing reports.',
       '6 NYCRR Part 613',
       { equipmentType: 'TANK', notes: 'DEC requires records per 40 CFR 280.34. State may require longer retention.' }),
+    rule('STATE_NY_WEEKLY_LEAK_MONITORING', 'INSPECTION', null,
+      'Weekly leak monitoring checks for all UST systems. New York requires more frequent monitoring than federal monthly walkthrough — weekly verification that all release detection systems are functioning, no alarms are active, and no visible signs of product release. Document findings weekly.',
+      '6 NYCRR Part 613.4; NYS Fire Code 3404.2',
+      { equipmentType: 'RELEASE_DETECTION', frequencyDays: 7, notes: 'NY requires weekly monitoring checks, stricter than federal monthly walkthrough. Document all weekly observations.' }),
+    rule('STATE_NY_DAILY_INVENTORY_RECORDS', 'DOCUMENTATION', null,
+      'Daily inventory recordkeeping for all UST systems. New York requires daily recording of fuel inventory levels, deliveries received, and volumes dispensed. Compare daily records monthly for reconciliation. Maintain records minimum 12 months on-site.',
+      '6 NYCRR Part 613.4(b); NYS Fire Code 3404.2.11.5.1',
+      { equipmentType: 'RELEASE_DETECTION', frequencyDays: 1, notes: 'NY requires daily inventory tracking, stricter than federal monthly reconciliation. Critical for early release detection.' }),
+    rule('STATE_NY_PBS_HEATING_OIL_REGISTRATION', 'CERTIFICATION', 12,
+      'Annual registration for Petroleum Bulk Storage (PBS) facilities including heating oil tanks. New York regulates USTs at 110-gallon threshold (vs federal 1,100 gallons). Includes heating oil tanks that are federally exempt. PBS registration renewal required annually with DEC.',
+      '6 NYCRR Parts 612-614; ECL 17-1000',
+      { equipmentType: 'TANK', notes: 'NY has 110-gallon threshold (10x stricter than federal). Heating oil tanks regulated. PBS registration covers both USTs and ASTs.' }),
+    rule('STATE_NY_STAGE_II_DECOMMISSION', 'REPORTING', null,
+      'Stage II vapor recovery system decommissioning notification. Notify state agency before removing or deactivating Stage II vapor recovery equipment. Post-decommissioning: install and test pressure/vacuum (P/V) vent caps, verify Stage I vapor recovery remains operational, document decommissioning work performed.',
+      '6 NYCRR Part 230',
+      { equipmentType: 'SPILL_PREVENTION', notes: 'DEC requires notification and proper decommissioning of Stage II systems. Post-decommission Stage I testing still required.' }),
+    rule('STATE_NY_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to DEC, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── OHIO (BUSTR) ──────────────────────────────────────────────────────
@@ -683,6 +743,10 @@ export const stateRules: Record<string, StateRule[]> = {
       'Annual recordkeeping audit. Verify on-site availability of: installation records, release detection records (min. 12 months), CP test records, financial responsibility docs, repair records, training certificates, compliance inspection results, and testing reports.',
       'OAC 1301:7-9',
       { equipmentType: 'TANK', notes: 'State Fire Marshal requires records per 40 CFR 280.34. State may require longer retention.' }),
+    rule('STATE_OH_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to SERC, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── PENNSYLVANIA (DEP) ────────────────────────────────────────────────
@@ -809,6 +873,14 @@ export const stateRules: Record<string, StateRule[]> = {
       'Annual recordkeeping audit. Verify on-site availability of: installation records, release detection records (min. 12 months), CP test records, financial responsibility docs, repair records, training certificates, compliance inspection results, and testing reports.',
       '25 Pa. Code §245',
       { equipmentType: 'TANK', notes: 'DEP requires records per 40 CFR 280.34. State may require longer retention.' }),
+    rule('STATE_PA_STAGE_II_DECOMMISSION', 'REPORTING', null,
+      'Stage II vapor recovery system decommissioning notification. Notify state agency before removing or deactivating Stage II vapor recovery equipment. Post-decommissioning: install and test pressure/vacuum (P/V) vent caps, verify Stage I vapor recovery remains operational, document decommissioning work performed.',
+      '25 Pa. Code §129.82',
+      { equipmentType: 'SPILL_PREVENTION', notes: 'DEP requires Stage II decommissioning notification. Post-decommission Stage I testing still required.' }),
+    rule('STATE_PA_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to PEMA, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── GEORGIA (EPD) ─────────────────────────────────────────────────────
@@ -935,6 +1007,10 @@ export const stateRules: Record<string, StateRule[]> = {
       'Annual recordkeeping audit. Verify on-site availability of: installation records, release detection records (min. 12 months), CP test records, financial responsibility docs, repair records, training certificates, compliance inspection results, and testing reports.',
       'Ga. Comp. R. 391-3-15',
       { equipmentType: 'TANK', notes: 'EPD requires records per 40 CFR 280.34. State may require longer retention.' }),
+    rule('STATE_GA_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to GEMA, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── NORTH CAROLINA (DEQ) ──────────────────────────────────────────────
@@ -1053,6 +1129,10 @@ export const stateRules: Record<string, StateRule[]> = {
       'Annual recordkeeping audit. Verify on-site availability of: installation records, release detection records (min. 12 months), CP test records, financial responsibility docs, repair records, training certificates, compliance inspection results, and testing reports.',
       '15A NCAC 02N',
       { equipmentType: 'TANK', notes: 'DEQ requires records per 40 CFR 280.34. State may require longer retention.' }),
+    rule('STATE_NC_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to DEQ, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── ILLINOIS (OSFM) ──────────────────────────────────────────────────
@@ -1183,6 +1263,14 @@ export const stateRules: Record<string, StateRule[]> = {
       'Annual recordkeeping audit. Verify on-site availability of: installation records, release detection records (min. 12 months), CP test records, financial responsibility docs, repair records, training certificates, compliance inspection results, and testing reports.',
       '41 Ill. Adm. Code 174',
       { equipmentType: 'TANK', notes: 'OSFM requires records per 40 CFR 280.34. State may require longer retention.' }),
+    rule('STATE_IL_STAGE_II_DECOMMISSION', 'REPORTING', null,
+      'Stage II vapor recovery system decommissioning notification. Notify state agency before removing or deactivating Stage II vapor recovery equipment. Post-decommissioning: install and test pressure/vacuum (P/V) vent caps, verify Stage I vapor recovery remains operational, document decommissioning work performed.',
+      '35 Ill. Adm. Code 218',
+      { equipmentType: 'SPILL_PREVENTION', notes: 'IEPA requires proper Stage II decommissioning and P/V vent cap installation. Post-decommission Stage I testing still required.' }),
+    rule('STATE_IL_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to IEMA, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── MICHIGAN (EGLE / LARA) ────────────────────────────────────────────
@@ -1301,6 +1389,14 @@ export const stateRules: Record<string, StateRule[]> = {
       'Annual recordkeeping audit. Verify on-site availability of: installation records, release detection records (minimum 12 months), CP test records, financial responsibility documentation, repair records, operator training certificates, compliance inspection results, and spill/overfill testing reports. Records must be available for LARA inspector review.',
       'Mich. Admin. Code R 29.2100',
       { equipmentType: 'TANK', notes: 'LARA requires records per federal 40 CFR 280.34 and 280.45. State may require additional records or longer retention periods.' }),
+    rule('STATE_MI_CLEANUP_FUND_PARTICIPATION', 'FINANCIAL', 12,
+      'Annual state cleanup fund participation verification. Confirm current enrollment and fee payment in state petroleum cleanup fund program. Eligibility typically requires compliance with all UST regulations at time of claim. Non-participation requires alternative financial responsibility mechanism (private insurance).',
+      'MCL 324.21101; R 29.2100',
+      { equipmentType: 'FINANCIAL', notes: 'Michigan UST Cleanup Fund program. Annual verification. Non-compliance at time of claim may void coverage.' }),
+    rule('STATE_MI_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to EGLE, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── NEW JERSEY (DEP) ─────────────────────────────────────────────────
@@ -1427,6 +1523,22 @@ export const stateRules: Record<string, StateRule[]> = {
       'Annual recordkeeping audit. Verify on-site availability of: installation records, release detection records (min. 12 months), CP test records, financial responsibility docs, repair records, training certificates, compliance inspection results, and testing reports.',
       'NJAC 7:14B',
       { equipmentType: 'TANK', notes: 'DEP requires records per 40 CFR 280.34. State may require longer retention.' }),
+    rule('STATE_NJ_ELECTRONIC_MECHANICAL_COMPONENT_TEST', 'TESTING', 12,
+      'Annual testing of all electronic and mechanical UST system components. New Jersey requires comprehensive annual testing beyond federal minimums — includes tank gauging probes, line leak detectors, interstitial sensors, sump sensors, overfill alarms, and emergency shutoff valves. Results must be submitted to NJDEP.',
+      'NJAC 7:14B-5.2',
+      { equipmentType: 'RELEASE_DETECTION', notes: 'NJ is stricter than federal: annual testing of ALL electronic/mechanical components, not just specific equipment on federal schedules.' }),
+    rule('STATE_NJ_TECHNICIAN_RECERTIFICATION', 'CERTIFICATION', 36,
+      'UST service technician recertification every 3 years. All technicians performing installation, closure, testing, or corrosion protection work must hold current NJDEP certification in applicable service categories. Recertification requires refresher coursework and examination. Work by uncertified technicians is invalid.',
+      'NJAC 7:14B-13',
+      { equipmentType: 'OPERATOR', notes: 'NJ-specific technician licensing. Verify all service providers hold current certifications before authorizing work. Multiple certification categories.' }),
+    rule('STATE_NJ_HEATING_OIL_TANK_COMPLIANCE', 'INSPECTION', 12,
+      'Annual compliance verification for heating oil USTs. New Jersey regulates on-site heating oil tanks that are federally exempt (>2,000 gallons). Requirements include registration, periodic testing, release detection, and closure notification. Heating oil tanks must meet same standards as regulated petroleum USTs.',
+      'NJAC 7:14B-1.6',
+      { equipmentType: 'TANK', notes: 'NJ expands regulation beyond federal scope. Heating oil USTs >2,000 gallons are regulated. Facilities with heating oil tanks must comply with full UST program.' }),
+    rule('STATE_NJ_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to DEP, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── VIRGINIA (DEQ) ────────────────────────────────────────────────────
@@ -1557,6 +1669,10 @@ export const stateRules: Record<string, StateRule[]> = {
       'Annual recordkeeping audit. Verify on-site availability of: installation records, release detection records (min. 12 months), CP test records, financial responsibility docs, repair records, training certificates, compliance inspection results, and testing reports.',
       '9 VAC 25-580',
       { equipmentType: 'TANK', notes: 'DEQ requires records per 40 CFR 280.34. State may require longer retention.' }),
+    rule('STATE_VA_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to DEQ, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── INDIANA (IDEM) ────────────────────────────────────────────────────
@@ -1663,6 +1779,18 @@ export const stateRules: Record<string, StateRule[]> = {
       'Triennial secondary containment system integrity testing. Verify double-wall tank interstice, containment sumps, and UDCs are liquid-tight. Testing per PEI RP1200, vacuum, pressure, or hydrostatic methods.',
       '329 IAC 9',
       { equipmentType: 'SECONDARY_CONTAINMENT', notes: 'IDEM requires secondary containment testing per federal 40 CFR 280.35.' }),
+    rule('STATE_IN_TECHNICIAN_CERTIFICATION', 'CERTIFICATION', 12,
+      'Annual verification that all UST service technicians hold current state certification. IDEM requires licensed/certified technicians for UST installation, testing, closure, and corrosion protection work. Verify contractor credentials before authorizing any UST system work. Work by uncertified technicians may be invalidated.',
+      '329 IAC 9-1-4',
+      { equipmentType: 'OPERATOR', notes: 'Indiana requires certified UST technicians for testing and installation. Verify certifications annually.' }),
+    rule('STATE_IN_CLEANUP_FUND_PARTICIPATION', 'FINANCIAL', 12,
+      'Annual state cleanup fund participation verification. Confirm current enrollment and fee payment in state petroleum cleanup fund program. Eligibility typically requires compliance with all UST regulations at time of claim. Non-participation requires alternative financial responsibility mechanism (private insurance).',
+      '329 IAC 9; IC 13-23',
+      { equipmentType: 'FINANCIAL', notes: 'Indiana Excess Liability Trust Fund (ELTF) program. Annual verification. Non-compliance at time of claim may void coverage.' }),
+    rule('STATE_IN_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to IDEM, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── LOUISIANA (DEQ) ───────────────────────────────────────────────────
@@ -1761,6 +1889,14 @@ export const stateRules: Record<string, StateRule[]> = {
       'Operator retraining required within 30 days of failed compliance inspection or significant violation. Class A and B operators must complete refresher training addressing identified deficiencies. Document completion and maintain records on-site.',
       'LAC 33:XI',
       { equipmentType: 'OPERATOR', frequencyDays: 30, notes: 'DEQ requires retraining per federal Subpart J provisions.' }),
+    rule('STATE_LA_STAGE_II_DECOMMISSION', 'REPORTING', null,
+      'Stage II vapor recovery system decommissioning notification. Notify state agency before removing or deactivating Stage II vapor recovery equipment. Post-decommissioning: install and test pressure/vacuum (P/V) vent caps, verify Stage I vapor recovery remains operational, document decommissioning work performed.',
+      'LAC 33:III.2153',
+      { equipmentType: 'SPILL_PREVENTION', notes: '30-day advance notification to DEQ before Stage II decommissioning. Post-decommission Stage I testing still required.' }),
+    rule('STATE_LA_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to GOHSEP, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── TENNESSEE (TDEC) ─────────────────────────────────────────────────
@@ -1871,6 +2007,14 @@ export const stateRules: Record<string, StateRule[]> = {
       'Triennial secondary containment system integrity testing. Verify double-wall tank interstice, containment sumps, and UDCs are liquid-tight. Testing per PEI RP1200, vacuum, pressure, or hydrostatic methods.',
       'Tenn. R. 0400-18-01',
       { equipmentType: 'SECONDARY_CONTAINMENT', notes: 'TDEC requires secondary containment testing per federal 40 CFR 280.35.' }),
+    rule('STATE_TN_CLEANUP_FUND_PARTICIPATION', 'FINANCIAL', 12,
+      'Annual state cleanup fund participation verification. Confirm current enrollment and fee payment in state petroleum cleanup fund program. Eligibility typically requires compliance with all UST regulations at time of claim. Non-participation requires alternative financial responsibility mechanism (private insurance).',
+      'TCA 68-215-101; Tenn. R. 0400-18-01',
+      { equipmentType: 'FINANCIAL', notes: 'Tennessee UST Fund program. Annual verification. Non-compliance at time of claim may void coverage.' }),
+    rule('STATE_TN_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to TEMA, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── ALABAMA (ADEM) ────────────────────────────────────────────────────
@@ -1971,6 +2115,10 @@ export const stateRules: Record<string, StateRule[]> = {
       'Triennial secondary containment system integrity testing. Verify double-wall tank interstice, containment sumps, and UDCs are liquid-tight. Testing per PEI RP1200, vacuum, pressure, or hydrostatic methods.',
       'ADEM Admin. Code 335-6-15',
       { equipmentType: 'SECONDARY_CONTAINMENT', notes: 'ADEM requires secondary containment testing per federal 40 CFR 280.35.' }),
+    rule('STATE_AL_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to AEMA, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── ALASKA (ADEC) ────────────────────────────────────────────────────
@@ -2073,6 +2221,10 @@ export const stateRules: Record<string, StateRule[]> = {
       'Operator retraining required within 30 days of failed compliance inspection or significant violation. Class A and B operators must complete refresher training addressing identified deficiencies. Document completion and maintain records on-site.',
       '18 AAC 78',
       { equipmentType: 'OPERATOR', frequencyDays: 30, notes: 'ADEC requires retraining per federal Subpart J provisions.' }),
+    rule('STATE_AK_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to ADEC, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── ARIZONA (ADEQ) ───────────────────────────────────────────────────
@@ -2175,6 +2327,10 @@ export const stateRules: Record<string, StateRule[]> = {
       'Triennial secondary containment system integrity testing. Verify double-wall tank interstice, containment sumps, and UDCs are liquid-tight. Testing per PEI RP1200, vacuum, pressure, or hydrostatic methods.',
       'AAC R18-12',
       { equipmentType: 'SECONDARY_CONTAINMENT', notes: 'ADEQ requires secondary containment testing per federal 40 CFR 280.35.' }),
+    rule('STATE_AZ_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to AZSERC, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── ARKANSAS (DEQ) ───────────────────────────────────────────────────
@@ -2270,6 +2426,14 @@ export const stateRules: Record<string, StateRule[]> = {
       'Operator retraining required within 30 days of failed compliance inspection or significant violation. Class A and B operators must complete refresher training addressing identified deficiencies. Document completion and maintain records on-site.',
       'APC&EC Reg. 12',
       { equipmentType: 'OPERATOR', frequencyDays: 30, notes: 'DEQ requires retraining per federal Subpart J provisions.' }),
+    rule('STATE_AR_TECHNICIAN_CERTIFICATION', 'CERTIFICATION', 12,
+      'Annual verification that all UST service technicians hold current state certification. DEQ requires licensed/certified technicians for UST installation, testing, closure, and corrosion protection work. Verify contractor credentials before authorizing any UST system work. Work by uncertified technicians may be invalidated.',
+      'APC&EC Reg. 12 §1105',
+      { equipmentType: 'OPERATOR', notes: 'Arkansas requires licensed UST installers and testers. Verify certifications annually.' }),
+    rule('STATE_AR_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to DEQ, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── COLORADO (CDLE/OPS) ──────────────────────────────────────────────
@@ -2393,6 +2557,10 @@ export const stateRules: Record<string, StateRule[]> = {
       'Operator retraining required within 30 days of failed compliance inspection or significant violation. Class A and B operators must complete refresher training addressing identified deficiencies. Document completion and maintain records on-site.',
       '7 CCR 1101-14',
       { equipmentType: 'OPERATOR', frequencyDays: 30, notes: 'OPS requires retraining per federal Subpart J provisions.' }),
+    rule('STATE_CO_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to CDPHE, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── CONNECTICUT (DEEP) ───────────────────────────────────────────────
@@ -2508,6 +2676,14 @@ export const stateRules: Record<string, StateRule[]> = {
       'Annual automatic tank gauge (ATG) calibration and verification. Confirm ATG probe accuracy against manual stick measurements. Verify alarm setpoints, leak detection thresholds, and high-level warning functions. Ensure system software is current.',
       'RCSA 22a-449(d)',
       { equipmentType: 'RELEASE_DETECTION', appliesToLeakDetection: 'ATG', notes: 'DEEP requires annual ATG verification per federal release detection standards.' }),
+    rule('STATE_CT_SENSITIVE_AREA_MONITORING', 'INSPECTION', 6,
+      'Enhanced monitoring for UST facilities in sensitive receptor areas (wellhead protection zones, near surface water, critical aquifer recharge areas). Semi-annual enhanced release detection verification, accelerated response timelines, and additional groundwater monitoring may be required.',
+      'RCSA 22a-449(d)-111',
+      { equipmentType: 'RELEASE_DETECTION', notes: 'DEEP requires enhanced monitoring in aquifer protection areas. More frequent monitoring than standard facilities.' }),
+    rule('STATE_CT_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to DEEP, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── DELAWARE (DNREC) ─────────────────────────────────────────────────
@@ -2606,6 +2782,10 @@ export const stateRules: Record<string, StateRule[]> = {
       'Operator retraining required within 30 days of failed compliance inspection or significant violation. Class A and B operators must complete refresher training addressing identified deficiencies. Document completion and maintain records on-site.',
       'DNREC UST Regs',
       { equipmentType: 'OPERATOR', frequencyDays: 30, notes: 'DNREC requires retraining per federal Subpart J provisions.' }),
+    rule('STATE_DE_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to DNREC, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── DISTRICT OF COLUMBIA (DOEE) ──────────────────────────────────────
@@ -2704,6 +2884,10 @@ export const stateRules: Record<string, StateRule[]> = {
       'Operator retraining required within 30 days of failed compliance inspection or significant violation. Class A and B operators must complete refresher training addressing identified deficiencies. Document completion and maintain records on-site.',
       '20 DCMR 6000',
       { equipmentType: 'OPERATOR', frequencyDays: 30, notes: 'DOEE requires retraining per federal Subpart J provisions.' }),
+    rule('STATE_DC_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to DOEE, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── HAWAII (DOH) ─────────────────────────────────────────────────────
@@ -2806,6 +2990,14 @@ export const stateRules: Record<string, StateRule[]> = {
       'Operator retraining required within 30 days of failed compliance inspection or significant violation. Class A and B operators must complete refresher training addressing identified deficiencies. Document completion and maintain records on-site.',
       'HAR 11-281',
       { equipmentType: 'OPERATOR', frequencyDays: 30, notes: 'DOH requires retraining per federal Subpart J provisions.' }),
+    rule('STATE_HI_SENSITIVE_AREA_MONITORING', 'INSPECTION', 6,
+      'Enhanced monitoring for UST facilities in sensitive receptor areas (wellhead protection zones, near surface water, critical aquifer recharge areas). Semi-annual enhanced release detection verification, accelerated response timelines, and additional groundwater monitoring may be required.',
+      'HAR 11-281-74',
+      { equipmentType: 'RELEASE_DETECTION', notes: 'DOH enhanced monitoring for USTs near drinking water sources and coastal areas. More frequent monitoring than standard facilities.' }),
+    rule('STATE_HI_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to DOH, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── IDAHO (DEQ) ──────────────────────────────────────────────────────
@@ -2904,6 +3096,10 @@ export const stateRules: Record<string, StateRule[]> = {
       'Operator retraining required within 30 days of failed compliance inspection or significant violation. Class A and B operators must complete refresher training addressing identified deficiencies. Document completion and maintain records on-site.',
       'IDAPA 58.01.02',
       { equipmentType: 'OPERATOR', frequencyDays: 30, notes: 'DEQ requires retraining per federal Subpart J provisions.' }),
+    rule('STATE_ID_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to BHS, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── IOWA (DNR) ───────────────────────────────────────────────────────
@@ -3010,6 +3206,10 @@ export const stateRules: Record<string, StateRule[]> = {
       'Operator retraining required within 30 days of failed compliance inspection or significant violation. Class A and B operators must complete refresher training addressing identified deficiencies. Document completion and maintain records on-site.',
       'IAC 567-135',
       { equipmentType: 'OPERATOR', frequencyDays: 30, notes: 'DNR requires retraining per federal Subpart J provisions.' }),
+    rule('STATE_IA_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to HSEMD, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── KANSAS (KDHE) ────────────────────────────────────────────────────
@@ -3112,6 +3312,10 @@ export const stateRules: Record<string, StateRule[]> = {
       'Operator retraining required within 30 days of failed compliance inspection or significant violation. Class A and B operators must complete refresher training addressing identified deficiencies. Document completion and maintain records on-site.',
       'KAR 28-44',
       { equipmentType: 'OPERATOR', frequencyDays: 30, notes: 'KDHE requires retraining per federal Subpart J provisions.' }),
+    rule('STATE_KS_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to KDEM, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── KENTUCKY (DEP) ───────────────────────────────────────────────────
@@ -3214,6 +3418,14 @@ export const stateRules: Record<string, StateRule[]> = {
       'Triennial secondary containment system integrity testing. Verify double-wall tank interstice, containment sumps, and UDCs are liquid-tight. Testing per PEI RP1200, vacuum, pressure, or hydrostatic methods.',
       '401 KAR 42',
       { equipmentType: 'SECONDARY_CONTAINMENT', notes: 'EEC requires secondary containment testing per federal 40 CFR 280.35.' }),
+    rule('STATE_KY_CLEANUP_FUND_PARTICIPATION', 'FINANCIAL', 12,
+      'Annual state cleanup fund participation verification. Confirm current enrollment and fee payment in state petroleum cleanup fund program. Eligibility typically requires compliance with all UST regulations at time of claim. Non-participation requires alternative financial responsibility mechanism (private insurance).',
+      '401 KAR 42; KRS 224.60',
+      { equipmentType: 'FINANCIAL', notes: 'Kentucky Petroleum Storage Tank Environmental Assurance Fund (PSTEAF). Annual verification. Non-compliance at time of claim may void coverage.' }),
+    rule('STATE_KY_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to KYEM, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── MAINE (DEP) ──────────────────────────────────────────────────────
@@ -3312,6 +3524,10 @@ export const stateRules: Record<string, StateRule[]> = {
       'Operator retraining required within 30 days of failed compliance inspection or significant violation. Class A and B operators must complete refresher training addressing identified deficiencies. Document completion and maintain records on-site.',
       '06-096 CMR 691',
       { equipmentType: 'OPERATOR', frequencyDays: 30, notes: 'DEP requires retraining per federal Subpart J provisions.' }),
+    rule('STATE_ME_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to MEMA, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── MARYLAND (MDE) ───────────────────────────────────────────────────
@@ -3434,6 +3650,18 @@ export const stateRules: Record<string, StateRule[]> = {
       'Annual automatic tank gauge (ATG) calibration and verification. Confirm ATG probe accuracy against manual stick measurements. Verify alarm setpoints, leak detection thresholds, and high-level warning functions. Ensure system software is current.',
       'COMAR 26.10',
       { equipmentType: 'RELEASE_DETECTION', appliesToLeakDetection: 'ATG', notes: 'MDE requires annual ATG verification per federal release detection standards.' }),
+    rule('STATE_MD_TECHNICIAN_CERTIFICATION', 'CERTIFICATION', 12,
+      'Annual verification that all UST service technicians hold current state certification. MDE requires licensed/certified technicians for UST installation, testing, closure, and corrosion protection work. Verify contractor credentials before authorizing any UST system work. Work by uncertified technicians may be invalidated.',
+      'COMAR 26.10.02',
+      { equipmentType: 'OPERATOR', notes: 'Maryland UST technician certification program. Multiple service categories. Verify certifications annually.' }),
+    rule('STATE_MD_SENSITIVE_AREA_MONITORING', 'INSPECTION', 6,
+      'Enhanced monitoring for UST facilities in sensitive receptor areas (wellhead protection zones, near surface water, critical aquifer recharge areas). Semi-annual enhanced release detection verification, accelerated response timelines, and additional groundwater monitoring may be required.',
+      'COMAR 26.10.04.06',
+      { equipmentType: 'RELEASE_DETECTION', notes: 'MDE enhanced monitoring for USTs in wellhead protection areas. More frequent monitoring than standard facilities.' }),
+    rule('STATE_MD_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to MDE, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── MASSACHUSETTS (MassDEP) ──────────────────────────────────────────
@@ -3560,6 +3788,14 @@ export const stateRules: Record<string, StateRule[]> = {
       'Operator retraining required within 30 days of failed compliance inspection or significant violation. Class A and B operators must complete refresher training addressing identified deficiencies. Document completion and maintain records on-site.',
       '527 CMR 9.00',
       { equipmentType: 'OPERATOR', frequencyDays: 30, notes: 'MassDEP requires retraining per federal Subpart J provisions.' }),
+    rule('STATE_MA_SENSITIVE_AREA_MONITORING', 'INSPECTION', 6,
+      'Enhanced monitoring for UST facilities in sensitive receptor areas (wellhead protection zones, near surface water, critical aquifer recharge areas). Semi-annual enhanced release detection verification, accelerated response timelines, and additional groundwater monitoring may be required.',
+      '527 CMR 9.00; 310 CMR 40.0000',
+      { equipmentType: 'RELEASE_DETECTION', notes: 'MassDEP enhanced monitoring for USTs in Zone II wellhead protection areas. More frequent monitoring than standard facilities.' }),
+    rule('STATE_MA_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to MEMA, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── MINNESOTA (MPCA) ─────────────────────────────────────────────────
@@ -3686,6 +3922,26 @@ export const stateRules: Record<string, StateRule[]> = {
       'Annual automatic tank gauge (ATG) calibration and verification. Confirm ATG probe accuracy against manual stick measurements. Verify alarm setpoints, leak detection thresholds, and high-level warning functions. Ensure system software is current.',
       'Minn. R. 7150',
       { equipmentType: 'RELEASE_DETECTION', appliesToLeakDetection: 'ATG', notes: 'MPCA requires annual ATG verification per federal release detection standards.' }),
+    rule('STATE_MN_IMPRESSED_CURRENT_MONTHLY_CHECK', 'INSPECTION', 1,
+      'Monthly impressed current cathodic protection system inspection. Minnesota requires monthly (not bimonthly as federal) verification that impressed current CP systems are energized and operating within design parameters. Check rectifier output voltage and current, record readings.',
+      'Minn. R. 7150.0220',
+      { equipmentType: 'CATHODIC_PROTECTION', appliesToCorrosionProtection: 'CATHODIC_PROTECTION', notes: 'MN is stricter than federal bimonthly requirement — requires monthly impressed current checks.' }),
+    rule('STATE_MN_SACRIFICIAL_ANODE_ANNUAL_TEST', 'TESTING', 12,
+      'Annual sacrificial anode cathodic protection testing. Minnesota requires annual (vs federal triennial) CP survey for galvanic/sacrificial anode systems on steel tanks. Measure pipe-to-soil potentials at all test stations per NACE criteria.',
+      'Minn. R. 7150.0220(3)',
+      { equipmentType: 'CATHODIC_PROTECTION', appliesToMaterial: 'STEEL', appliesToCorrosionProtection: 'CATHODIC_PROTECTION', notes: 'MN requires annual sacrificial anode CP testing — 3x more frequent than federal triennial requirement.' }),
+    rule('STATE_MN_PETROFUND_ANNUAL_FEE', 'FINANCIAL', 12,
+      'Annual Petrofund registration fee. Minnesota Petrofund provides cleanup assistance for petroleum releases. Annual per-tank fee required. Eligibility requires compliance with all UST regulations at time of claim. Facilities with throughput >1 million gallons may have different fee schedule.',
+      'Minn. Stat. 115C.08-115C.09',
+      { equipmentType: 'FINANCIAL', notes: 'MN Petrofund participation. Annual fee per tank. Compliance required for cleanup fund eligibility. Critical financial protection for operators.' }),
+    rule('STATE_MN_MANDATORY_SECONDARY_CONTAINMENT', 'CERTIFICATION', null,
+      'Verification that all UST systems have secondary containment. Minnesota requires secondary containment (double-wall tanks and piping with interstitial monitoring) for all new and replacement systems — no single-wall option. Existing single-wall systems must have approved alternative monitoring. Verify compliance status.',
+      'Minn. R. 7150.0100-7150.0500',
+      { equipmentType: 'SECONDARY_CONTAINMENT', notes: 'MN mandatory secondary containment. Stricter than federal, which allows single-wall with other release detection methods.' }),
+    rule('STATE_MN_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to HSEM, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── MISSISSIPPI (MDEQ) ───────────────────────────────────────────────
@@ -3784,6 +4040,14 @@ export const stateRules: Record<string, StateRule[]> = {
       'Triennial secondary containment system integrity testing. Verify double-wall tank interstice, containment sumps, and UDCs are liquid-tight. Testing per PEI RP1200, vacuum, pressure, or hydrostatic methods.',
       'Miss. Admin. Code 17-4',
       { equipmentType: 'SECONDARY_CONTAINMENT', notes: 'MDEQ requires secondary containment testing per federal 40 CFR 280.35.' }),
+    rule('STATE_MS_TECHNICIAN_CERTIFICATION', 'CERTIFICATION', 12,
+      'Annual verification that all UST service technicians hold current state certification. MDEQ requires licensed/certified technicians for UST installation, testing, closure, and corrosion protection work. Verify contractor credentials before authorizing any UST system work. Work by uncertified technicians may be invalidated.',
+      'Miss. Admin. Code 17-4',
+      { equipmentType: 'OPERATOR', notes: 'Mississippi requires certified UST service providers. Verify certifications annually.' }),
+    rule('STATE_MS_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to MEMA, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── MISSOURI (DNR) ───────────────────────────────────────────────────
@@ -3890,6 +4154,10 @@ export const stateRules: Record<string, StateRule[]> = {
       'Triennial secondary containment system integrity testing. Verify double-wall tank interstice, containment sumps, and UDCs are liquid-tight. Testing per PEI RP1200, vacuum, pressure, or hydrostatic methods.',
       '10 CSR 20-10',
       { equipmentType: 'SECONDARY_CONTAINMENT', notes: 'DNR requires secondary containment testing per federal 40 CFR 280.35.' }),
+    rule('STATE_MO_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to SEMA, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── MONTANA (DEQ) ────────────────────────────────────────────────────
@@ -3992,6 +4260,10 @@ export const stateRules: Record<string, StateRule[]> = {
       'Operator retraining required within 30 days of failed compliance inspection or significant violation. Class A and B operators must complete refresher training addressing identified deficiencies. Document completion and maintain records on-site.',
       'ARM 17.56',
       { equipmentType: 'OPERATOR', frequencyDays: 30, notes: 'DEQ requires retraining per federal Subpart J provisions.' }),
+    rule('STATE_MT_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to DES, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── NEBRASKA (SFM/NDEE) ─────────────────────────────────────────────
@@ -4086,6 +4358,10 @@ export const stateRules: Record<string, StateRule[]> = {
       'Operator retraining required within 30 days of failed compliance inspection or significant violation. Class A and B operators must complete refresher training addressing identified deficiencies. Document completion and maintain records on-site.',
       'Title 159 Ch. 10',
       { equipmentType: 'OPERATOR', frequencyDays: 30, notes: 'Fire Marshal/DEQ requires retraining per federal Subpart J provisions.' }),
+    rule('STATE_NE_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to NEMA, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── NEVADA (NDEP) ────────────────────────────────────────────────────
@@ -4192,6 +4468,10 @@ export const stateRules: Record<string, StateRule[]> = {
       'Operator retraining required within 30 days of failed compliance inspection or significant violation. Class A and B operators must complete refresher training addressing identified deficiencies. Document completion and maintain records on-site.',
       'NAC 459.9900',
       { equipmentType: 'OPERATOR', frequencyDays: 30, notes: 'NDEP requires retraining per federal Subpart J provisions.' }),
+    rule('STATE_NV_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to DEM, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── NEW HAMPSHIRE (DES) ──────────────────────────────────────────────
@@ -4298,6 +4578,10 @@ export const stateRules: Record<string, StateRule[]> = {
       'Operator retraining required within 30 days of failed compliance inspection or significant violation. Class A and B operators must complete refresher training addressing identified deficiencies. Document completion and maintain records on-site.',
       'Env-Or 400',
       { equipmentType: 'OPERATOR', frequencyDays: 30, notes: 'DES requires retraining per federal Subpart J provisions.' }),
+    rule('STATE_NH_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to HSEM, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── NEW MEXICO (NMED) ────────────────────────────────────────────────
@@ -4396,6 +4680,10 @@ export const stateRules: Record<string, StateRule[]> = {
       'Operator retraining required within 30 days of failed compliance inspection or significant violation. Class A and B operators must complete refresher training addressing identified deficiencies. Document completion and maintain records on-site.',
       '20.5.119 NMAC',
       { equipmentType: 'OPERATOR', frequencyDays: 30, notes: 'NMED requires retraining per federal Subpart J provisions.' }),
+    rule('STATE_NM_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to DHSEM, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── NORTH DAKOTA (NDDEQ) ─────────────────────────────────────────────
@@ -4498,6 +4786,10 @@ export const stateRules: Record<string, StateRule[]> = {
       'Triennial secondary containment system integrity testing. Verify double-wall tank interstice, containment sumps, and UDCs are liquid-tight. Testing per PEI RP1200, vacuum, pressure, or hydrostatic methods.',
       'NDAC 33.1-24-08',
       { equipmentType: 'SECONDARY_CONTAINMENT', notes: 'DEQ requires secondary containment testing per federal 40 CFR 280.35.' }),
+    rule('STATE_ND_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to DES, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── OKLAHOMA (OCC) ───────────────────────────────────────────────────
@@ -4600,6 +4892,10 @@ export const stateRules: Record<string, StateRule[]> = {
       'Operator retraining required within 30 days of failed compliance inspection or significant violation. Class A and B operators must complete refresher training addressing identified deficiencies. Document completion and maintain records on-site.',
       'OAC 252:505',
       { equipmentType: 'OPERATOR', frequencyDays: 30, notes: 'DEQ requires retraining per federal Subpart J provisions.' }),
+    rule('STATE_OK_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to OEM, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── OREGON (DEQ) ─────────────────────────────────────────────────────
@@ -4698,6 +4994,22 @@ export const stateRules: Record<string, StateRule[]> = {
       'Annual automatic tank gauge (ATG) calibration and verification. Confirm ATG probe accuracy against manual stick measurements. Verify alarm setpoints, leak detection thresholds, and high-level warning functions. Ensure system software is current.',
       'OAR 340-150',
       { equipmentType: 'RELEASE_DETECTION', appliesToLeakDetection: 'ATG', notes: 'DEQ requires annual ATG verification per federal release detection standards.' }),
+    rule('STATE_OR_LICENSED_SERVICE_PROVIDER', 'CERTIFICATION', 12,
+      'Annual verification that all UST service providers hold current Oregon DEQ licenses. Updated July 2025 (OAR 340 Div 160): companies and individual supervisors must be state-licensed for UST installation, decommissioning, testing, and monitoring work. Work performed by unlicensed providers is invalid and may require re-testing.',
+      'OAR 340-160-0010',
+      { equipmentType: 'OPERATOR', notes: 'Oregon requires state-licensed UST service providers. Verify license status before engaging any contractor. Updated regulations effective July 2025.' }),
+    rule('STATE_OR_PERMANENT_CLOSURE', 'CLOSURE', null,
+      'Notify DEQ at least 30 days before permanent closure or change-in-service. Closure must be performed by Oregon-licensed service provider. Includes tank emptying, cleaning, removal or fill-in-place, site assessment with soil/groundwater sampling, and submission of closure report.',
+      'OAR 340-150-0400',
+      { equipmentType: 'TANK', notes: 'Oregon requires licensed provider for all closure work. 30-day advance notification to DEQ required.' }),
+    rule('STATE_OR_CLEANUP_FUND_PARTICIPATION', 'FINANCIAL', 12,
+      'Annual state cleanup fund participation verification. Confirm current enrollment and fee payment in state petroleum cleanup fund program. Eligibility typically requires compliance with all UST regulations at time of claim. Non-participation requires alternative financial responsibility mechanism (private insurance).',
+      'ORS 466.706; OAR 340-150',
+      { equipmentType: 'FINANCIAL', notes: 'Oregon DEQ Heating Oil Tank program / Environmental Cleanup fund. Annual verification. Non-compliance at time of claim may void coverage.' }),
+    rule('STATE_OR_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to OEM, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── RHODE ISLAND (DEM) ───────────────────────────────────────────────
@@ -4804,6 +5116,10 @@ export const stateRules: Record<string, StateRule[]> = {
       'Operator retraining required within 30 days of failed compliance inspection or significant violation. Class A and B operators must complete refresher training addressing identified deficiencies. Document completion and maintain records on-site.',
       'RI UST Rules',
       { equipmentType: 'OPERATOR', frequencyDays: 30, notes: 'DEM requires retraining per federal Subpart J provisions.' }),
+    rule('STATE_RI_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to RIEMA, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── SOUTH CAROLINA (SCDES) ───────────────────────────────────────────
@@ -4906,6 +5222,14 @@ export const stateRules: Record<string, StateRule[]> = {
       'Triennial secondary containment system integrity testing. Verify double-wall tank interstice, containment sumps, and UDCs are liquid-tight. Testing per PEI RP1200, vacuum, pressure, or hydrostatic methods.',
       'SC R.61-92.280',
       { equipmentType: 'SECONDARY_CONTAINMENT', notes: 'DHEC requires secondary containment testing per federal 40 CFR 280.35.' }),
+    rule('STATE_SC_CLEANUP_FUND_PARTICIPATION', 'FINANCIAL', 12,
+      'Annual state cleanup fund participation verification. Confirm current enrollment and fee payment in state petroleum cleanup fund program. Eligibility typically requires compliance with all UST regulations at time of claim. Non-participation requires alternative financial responsibility mechanism (private insurance).',
+      'SC Code 44-2-10; R.61-92',
+      { equipmentType: 'FINANCIAL', notes: 'South Carolina SUPERB (State Underground Petroleum Environmental Response Bank) fund. Annual verification. Non-compliance at time of claim may void coverage.' }),
+    rule('STATE_SC_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to EMD, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── SOUTH DAKOTA (DANR) ──────────────────────────────────────────────
@@ -5012,6 +5336,10 @@ export const stateRules: Record<string, StateRule[]> = {
       'Operator retraining required within 30 days of failed compliance inspection or significant violation. Class A and B operators must complete refresher training addressing identified deficiencies. Document completion and maintain records on-site.',
       'ARSD 74:56',
       { equipmentType: 'OPERATOR', frequencyDays: 30, notes: 'DENR requires retraining per federal Subpart J provisions.' }),
+    rule('STATE_SD_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to OEM, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── UTAH (DEQ) ───────────────────────────────────────────────────────
@@ -5114,6 +5442,10 @@ export const stateRules: Record<string, StateRule[]> = {
       'Operator retraining required within 30 days of failed compliance inspection or significant violation. Class A and B operators must complete refresher training addressing identified deficiencies. Document completion and maintain records on-site.',
       'UAC R311-203',
       { equipmentType: 'OPERATOR', frequencyDays: 30, notes: 'DEQ requires retraining per federal Subpart J provisions.' }),
+    rule('STATE_UT_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to DEM, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── VERMONT (DEC) ────────────────────────────────────────────────────
@@ -5224,6 +5556,10 @@ export const stateRules: Record<string, StateRule[]> = {
       'Operator retraining required within 30 days of failed compliance inspection or significant violation. Class A and B operators must complete refresher training addressing identified deficiencies. Document completion and maintain records on-site.',
       'VUSTP Rules',
       { equipmentType: 'OPERATOR', frequencyDays: 30, notes: 'DEC requires retraining per federal Subpart J provisions.' }),
+    rule('STATE_VT_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to DEMHS, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── WASHINGTON (ECY) ─────────────────────────────────────────────────
@@ -5342,6 +5678,18 @@ export const stateRules: Record<string, StateRule[]> = {
       'Operator retraining required within 30 days of failed compliance inspection or significant violation. Class A and B operators must complete refresher training addressing identified deficiencies. Document completion and maintain records on-site.',
       'WAC 173-360A',
       { equipmentType: 'OPERATOR', frequencyDays: 30, notes: 'Ecology requires retraining per federal Subpart J provisions.' }),
+    rule('STATE_WA_SENSITIVE_AREA_MONITORING', 'INSPECTION', 6,
+      'Enhanced monitoring for UST facilities in sensitive receptor areas (wellhead protection zones, near surface water, critical aquifer recharge areas). Semi-annual enhanced release detection verification, accelerated response timelines, and additional groundwater monitoring may be required.',
+      'WAC 173-360A-0830',
+      { equipmentType: 'RELEASE_DETECTION', notes: 'Ecology requires enhanced monitoring in critical aquifer recharge areas. More frequent monitoring than standard facilities.' }),
+    rule('STATE_WA_CLEANUP_FUND_PARTICIPATION', 'FINANCIAL', 12,
+      'Annual state cleanup fund participation verification. Confirm current enrollment and fee payment in state petroleum cleanup fund program. Eligibility typically requires compliance with all UST regulations at time of claim. Non-participation requires alternative financial responsibility mechanism (private insurance).',
+      'RCW 70A.355; WAC 173-360A',
+      { equipmentType: 'FINANCIAL', notes: 'Washington Pollution Liability Insurance Agency (PLIA) program. Annual verification. Non-compliance at time of claim may void coverage.' }),
+    rule('STATE_WA_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to EMD, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── WEST VIRGINIA (DEP) ──────────────────────────────────────────────
@@ -5436,6 +5784,10 @@ export const stateRules: Record<string, StateRule[]> = {
       'Operator retraining required within 30 days of failed compliance inspection or significant violation. Class A and B operators must complete refresher training addressing identified deficiencies. Document completion and maintain records on-site.',
       '33 CSR 30',
       { equipmentType: 'OPERATOR', frequencyDays: 30, notes: 'DEP requires retraining per federal Subpart J provisions.' }),
+    rule('STATE_WV_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to DHSEM, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── WISCONSIN (DATCP/DNR) ────────────────────────────────────────────
@@ -5554,6 +5906,14 @@ export const stateRules: Record<string, StateRule[]> = {
       'Annual automatic tank gauge (ATG) calibration and verification. Confirm ATG probe accuracy against manual stick measurements. Verify alarm setpoints, leak detection thresholds, and high-level warning functions. Ensure system software is current.',
       'Wis. Admin. Code ATCP 93',
       { equipmentType: 'RELEASE_DETECTION', appliesToLeakDetection: 'ATG', notes: 'DATCP requires annual ATG verification per federal release detection standards.' }),
+    rule('STATE_WI_CLEANUP_FUND_PARTICIPATION', 'FINANCIAL', 12,
+      'Annual state cleanup fund participation verification. Confirm current enrollment and fee payment in state petroleum cleanup fund program. Eligibility typically requires compliance with all UST regulations at time of claim. Non-participation requires alternative financial responsibility mechanism (private insurance).',
+      'Wis. Stat. 101.143; ATCP 93',
+      { equipmentType: 'FINANCIAL', notes: 'Wisconsin PECFA (Petroleum Environmental Cleanup Fund Act) program. Annual verification. Non-compliance at time of claim may void coverage.' }),
+    rule('STATE_WI_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to WEM, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 
   // ── WYOMING (WDEQ) ──────────────────────────────────────────────────
@@ -5652,6 +6012,10 @@ export const stateRules: Record<string, StateRule[]> = {
       'Operator retraining required within 30 days of failed compliance inspection or significant violation. Class A and B operators must complete refresher training addressing identified deficiencies. Document completion and maintain records on-site.',
       'WDEQ Ch. 17',
       { equipmentType: 'OPERATOR', frequencyDays: 30, notes: 'DEQ requires retraining per federal Subpart J provisions.' }),
+    rule('STATE_WY_EPCRA_TIER_II_REPORT', 'REPORTING', 12,
+      'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to WOHS, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
+      'EPCRA §312; 42 USC §11022',
+      { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
   ],
 };
 
