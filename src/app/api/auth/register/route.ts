@@ -1,17 +1,21 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { hashPassword, createSession } from '@/lib/auth';
+import { registerSchema } from '@/lib/validations';
 
 export async function POST(request: Request) {
   try {
-    const { email, password, name, companyName } = await request.json();
+    const body = await request.json();
+    const result = registerSchema.safeParse(body);
 
-    if (!email || !password || !companyName) {
+    if (!result.success) {
       return NextResponse.json(
-        { error: 'Email, password, and company name are required' },
+        { error: 'Validation failed', issues: result.error.issues },
         { status: 400 },
       );
     }
+
+    const { email, password, name, companyName } = result.data;
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
+import { pickAllowedFields, complianceUpdateFields } from '@/lib/validations';
 
 export async function GET(
   request: Request,
@@ -60,16 +61,25 @@ export async function PUT(
     }
 
     const body = await request.json();
-    if (body.dueDate) {
-      body.dueDate = new Date(body.dueDate);
+    const data = pickAllowedFields(body, complianceUpdateFields);
+    if (data.dueDate) {
+      const parsed = new Date(data.dueDate as string);
+      if (isNaN(parsed.getTime())) {
+        return NextResponse.json({ error: 'Invalid dueDate' }, { status: 400 });
+      }
+      data.dueDate = parsed;
     }
-    if (body.completedDate) {
-      body.completedDate = new Date(body.completedDate);
+    if (data.completedDate) {
+      const parsed = new Date(data.completedDate as string);
+      if (isNaN(parsed.getTime())) {
+        return NextResponse.json({ error: 'Invalid completedDate' }, { status: 400 });
+      }
+      data.completedDate = parsed;
     }
 
     const item = await prisma.complianceItem.update({
       where: { id },
-      data: body,
+      data,
     });
 
     return NextResponse.json({ item });

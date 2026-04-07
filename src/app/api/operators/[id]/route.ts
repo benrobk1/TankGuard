@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
+import { pickAllowedFields, operatorUpdateFields } from '@/lib/validations';
 
 export async function GET(
   request: Request,
@@ -54,16 +55,25 @@ export async function PUT(
     }
 
     const body = await request.json();
-    if (body.certificationDate) {
-      body.certificationDate = new Date(body.certificationDate);
+    const data = pickAllowedFields(body, operatorUpdateFields);
+    if (data.certificationDate) {
+      const parsed = new Date(data.certificationDate as string);
+      if (isNaN(parsed.getTime())) {
+        return NextResponse.json({ error: 'Invalid certificationDate' }, { status: 400 });
+      }
+      data.certificationDate = parsed;
     }
-    if (body.certificationExpiration) {
-      body.certificationExpiration = new Date(body.certificationExpiration);
+    if (data.certificationExpiration) {
+      const parsed = new Date(data.certificationExpiration as string);
+      if (isNaN(parsed.getTime())) {
+        return NextResponse.json({ error: 'Invalid certificationExpiration' }, { status: 400 });
+      }
+      data.certificationExpiration = parsed;
     }
 
     const operator = await prisma.operator.update({
       where: { id },
-      data: body,
+      data,
     });
 
     return NextResponse.json({ operator });

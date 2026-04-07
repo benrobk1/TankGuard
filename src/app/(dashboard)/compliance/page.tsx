@@ -146,7 +146,7 @@ export default function CompliancePage() {
 
       {/* Filters */}
       <div className="flex gap-4 flex-wrap">
-        <Select label="" value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setPage(1); }}>
+        <Select label="Filter by status" value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setPage(1); }}>
           <option value="">All Statuses</option>
           <option value="OVERDUE">Overdue</option>
           <option value="DUE_SOON">Due Soon</option>
@@ -154,7 +154,7 @@ export default function CompliancePage() {
           <option value="COMPLETED">Completed</option>
           <option value="WAIVED">Waived</option>
         </Select>
-        <Select label="" value={typeFilter} onChange={e => { setTypeFilter(e.target.value); setPage(1); }}>
+        <Select label="Filter by type" value={typeFilter} onChange={e => { setTypeFilter(e.target.value); setPage(1); }}>
           <option value="">All Types</option>
           <option value="INSPECTION">Inspection</option>
           <option value="TEST">Test</option>

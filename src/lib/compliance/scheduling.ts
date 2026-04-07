@@ -209,9 +209,16 @@ export async function getCustomerComplianceSummary(customerId: string) {
 function calculateDueDate(frequencyMonths: number | null, frequencyDays: number | null): Date {
   const now = new Date();
   if (frequencyMonths) {
-    now.setMonth(now.getMonth() + frequencyMonths);
+    const target = new Date(now);
+    const originalDay = target.getDate();
+    target.setMonth(target.getMonth() + frequencyMonths);
+    // Handle month overflow (e.g., Jan 31 + 1 month should be Feb 28, not Mar 3)
+    if (target.getDate() !== originalDay) {
+      target.setDate(0); // Set to last day of previous month
+    }
+    return target;
   } else if (frequencyDays) {
-    now.setDate(now.getDate() + frequencyDays);
+    return new Date(now.getTime() + frequencyDays * 24 * 60 * 60 * 1000);
   }
   return now;
 }

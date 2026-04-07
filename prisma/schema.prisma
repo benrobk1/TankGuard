@@ -116,6 +116,8 @@ model Facility {
   documents       Document[]
   reminders       Reminder[]
 
+  @@index([customerId])
+  @@index([stateId])
   @@map("facilities")
 }
 
@@ -153,6 +155,7 @@ model Tank {
   complianceItems ComplianceItem[]
   documents       Document[]
 
+  @@index([facilityId])
   @@map("tanks")
 }
 
@@ -221,6 +224,7 @@ model Operator {
 
   facility Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
 
+  @@index([facilityId])
   @@map("operators")
 }
 
@@ -254,9 +258,12 @@ model ComplianceRule {
   createdAt      DateTime        @default(now()) @map("created_at")
   updatedAt      DateTime        @updatedAt @map("updated_at")
 
-  state           State?          @relation(fields: [stateId], references: [id])
+  state           State?          @relation(fields: [stateId], references: [id], onDelete: SetNull)
   complianceItems ComplianceItem[]
 
+  @@index([stateId])
+  @@index([inspectionType])
+  @@index([category])
   @@map("compliance_rules")
 }
 
@@ -303,6 +310,8 @@ model ComplianceItem {
   @@index([facilityId, status])
   @@index([dueDate])
   @@index([status])
+  @@index([tankId])
+  @@index([ruleId])
   @@map("compliance_items")
 }
 
@@ -373,6 +382,8 @@ model Document {
   tank           Tank?           @relation(fields: [tankId], references: [id], onDelete: Cascade)
   complianceItem ComplianceItem? @relation(fields: [complianceItemId], references: [id], onDelete: SetNull)
 
+  @@index([facilityId])
+  @@index([complianceItemId])
   @@map("documents")
 }
 
@@ -405,6 +416,8 @@ model Reminder {
   facility       Facility       @relation(fields: [facilityId], references: [id], onDelete: Cascade)
   customer       Customer       @relation(fields: [customerId], references: [id], onDelete: Cascade)
 
+  @@index([complianceItemId, reminderType])
+  @@index([customerId, status])
   @@map("reminders")
 }
 
