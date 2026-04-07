@@ -105,8 +105,18 @@ export async function GET() {
       };
     });
 
+    const totalItems = allComplianceItems.length || 1;
+    const completedCount = complianceSummary.completed;
+    const complianceScore = Math.round((completedCount / totalItems) * 100);
+
     return NextResponse.json({
-      complianceSummary,
+      summary: {
+        totalFacilities: facilities.length,
+        totalTanks: facilities.reduce((sum, f) => sum + f._count.tanks, 0),
+        totalItems: allComplianceItems.length,
+        ...complianceSummary,
+        complianceScore,
+      },
       upcomingItems,
       overdueItems,
       recentCompletions,

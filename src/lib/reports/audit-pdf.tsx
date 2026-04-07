@@ -1,0 +1,278 @@
+import React from 'react';
+import { Document, Page, Text, View, StyleSheet, renderToBuffer } from '@react-pdf/renderer';
+
+const styles = StyleSheet.create({
+  page: { padding: 40, fontSize: 10, fontFamily: 'Helvetica' },
+  header: { marginBottom: 20 },
+  title: { fontSize: 20, fontWeight: 'bold', color: '#1a56db', marginBottom: 4 },
+  subtitle: { fontSize: 12, color: '#6b7280', marginBottom: 2 },
+  generatedAt: { fontSize: 8, color: '#9ca3af', marginTop: 8 },
+  section: { marginBottom: 16 },
+  sectionTitle: { fontSize: 14, fontWeight: 'bold', color: '#111827', marginBottom: 8, paddingBottom: 4, borderBottomWidth: 1, borderBottomColor: '#e5e7eb' },
+  row: { flexDirection: 'row', paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
+  headerRow: { flexDirection: 'row', paddingVertical: 6, borderBottomWidth: 2, borderBottomColor: '#d1d5db', backgroundColor: '#f9fafb' },
+  cell: { flex: 1, paddingHorizontal: 4 },
+  cellSmall: { width: 60, paddingHorizontal: 4 },
+  cellMedium: { width: 90, paddingHorizontal: 4 },
+  bold: { fontWeight: 'bold' },
+  statusCompliant: { color: '#059669' },
+  statusOverdue: { color: '#dc2626' },
+  statusDueSoon: { color: '#d97706' },
+  summaryGrid: { flexDirection: 'row', marginBottom: 16 },
+  summaryBox: { flex: 1, padding: 10, marginRight: 8, backgroundColor: '#f9fafb', borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 4 },
+  summaryLabel: { fontSize: 8, color: '#6b7280', marginBottom: 2 },
+  summaryValue: { fontSize: 16, fontWeight: 'bold' },
+  scoreBox: { padding: 12, borderRadius: 4, marginBottom: 16, alignItems: 'center' as const },
+  scoreValue: { fontSize: 28, fontWeight: 'bold', color: '#ffffff' },
+  scoreLabel: { fontSize: 10, color: '#ffffff', opacity: 0.9 },
+  footer: { position: 'absolute' as const, bottom: 20, left: 40, right: 40, flexDirection: 'row', justifyContent: 'space-between', fontSize: 8, color: '#9ca3af' },
+  tankDetail: { marginBottom: 4, fontSize: 9 },
+});
+
+interface AuditData {
+  generatedAt: string;
+  facility: {
+    name: string;
+    address: string;
+    city: string;
+    zip: string;
+    registrationNumber?: string | null;
+    state: { name: string; abbreviation: string };
+  };
+  tanks: Array<{
+    tankNumber: string;
+    capacityGallons: number;
+    material: string;
+    productStored: string;
+    status: string;
+    leakDetectionMethod: string;
+    corrosionProtectionType?: string | null;
+    hasSecondaryContainment: boolean;
+    installationDate?: string | null;
+  }>;
+  complianceSummary: {
+    total: number;
+    upcoming: number;
+    dueSoon: number;
+    overdue: number;
+    completed: number;
+    waived: number;
+  };
+  complianceItems: Array<{
+    description: string;
+    dueDate: string;
+    status: string;
+    completedDate?: string | null;
+    tank?: { tankNumber: string } | null;
+    rule?: { citation?: string | null; inspectionType: string } | null;
+  }>;
+  operators: Array<{
+    name: string;
+    operatorClass: string;
+    certificationDate?: string | null;
+    certificationExpiration?: string | null;
+  }>;
+}
+
+function formatDate(d: string | null | undefined): string {
+  if (!d) return 'N/A';
+  return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function formatEnum(s: string): string {
+  return s.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function getScoreColor(score: number): string {
+  if (score >= 80) return '#059669';
+  if (score >= 50) return '#d97706';
+  return '#dc2626';
+}
+
+function statusColor(status: string) {
+  switch (status) {
+    case 'COMPLETED': return styles.statusCompliant;
+    case 'OVERDUE': return styles.statusOverdue;
+    case 'DUE_SOON': return styles.statusDueSoon;
+    default: return {};
+  }
+}
+
+function AuditReport({ data }: { data: AuditData }) {
+  const { facility, tanks, complianceSummary: cs, complianceItems, operators } = data;
+  const score = cs.total > 0 ? Math.round((cs.completed / cs.total) * 100) : 100;
+
+  return (
+    <Document>
+      <Page size="A4" style={styles.page}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.title}>TankGuard Compliance Audit Report</Text>
+          <Text style={styles.subtitle}>{facility.name}</Text>
+          <Text style={styles.subtitle}>{facility.address}, {facility.city}, {facility.state.abbreviation} {facility.zip}</Text>
+          {facility.registrationNumber && (
+            <Text style={styles.subtitle}>Registration: {facility.registrationNumber}</Text>
+          )}
+          <Text style={styles.generatedAt}>Generated: {formatDate(data.generatedAt)}</Text>
+        </View>
+
+        {/* Compliance Score */}
+        <View style={[styles.scoreBox, { backgroundColor: getScoreColor(score) }]}>
+          <Text style={styles.scoreValue}>{score}%</Text>
+          <Text style={styles.scoreLabel}>Overall Compliance Score</Text>
+        </View>
+
+        {/* Summary Grid */}
+        <View style={styles.summaryGrid}>
+          <View style={styles.summaryBox}>
+            <Text style={styles.summaryLabel}>Total Items</Text>
+            <Text style={styles.summaryValue}>{cs.total}</Text>
+          </View>
+          <View style={styles.summaryBox}>
+            <Text style={styles.summaryLabel}>Completed</Text>
+            <Text style={[styles.summaryValue, styles.statusCompliant]}>{cs.completed}</Text>
+          </View>
+          <View style={styles.summaryBox}>
+            <Text style={styles.summaryLabel}>Due Soon</Text>
+            <Text style={[styles.summaryValue, styles.statusDueSoon]}>{cs.dueSoon}</Text>
+          </View>
+          <View style={styles.summaryBox}>
+            <Text style={styles.summaryLabel}>Overdue</Text>
+            <Text style={[styles.summaryValue, styles.statusOverdue]}>{cs.overdue}</Text>
+          </View>
+          <View style={[styles.summaryBox, { marginRight: 0 }]}>
+            <Text style={styles.summaryLabel}>Upcoming</Text>
+            <Text style={styles.summaryValue}>{cs.upcoming}</Text>
+          </View>
+        </View>
+
+        {/* Tank Inventory */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Tank Inventory ({tanks.length} tanks)</Text>
+          <View style={styles.headerRow}>
+            <Text style={[styles.cellSmall, styles.bold]}>Tank #</Text>
+            <Text style={[styles.cellMedium, styles.bold]}>Material</Text>
+            <Text style={[styles.cellSmall, styles.bold]}>Capacity</Text>
+            <Text style={[styles.cellMedium, styles.bold]}>Product</Text>
+            <Text style={[styles.cellMedium, styles.bold]}>Leak Detection</Text>
+            <Text style={[styles.cellSmall, styles.bold]}>Status</Text>
+          </View>
+          {tanks.map((tank, idx) => (
+            <View key={idx} style={styles.row}>
+              <Text style={styles.cellSmall}>{tank.tankNumber}</Text>
+              <Text style={styles.cellMedium}>{formatEnum(tank.material)}</Text>
+              <Text style={styles.cellSmall}>{tank.capacityGallons.toLocaleString()} gal</Text>
+              <Text style={styles.cellMedium}>{formatEnum(tank.productStored)}</Text>
+              <Text style={styles.cellMedium}>{formatEnum(tank.leakDetectionMethod)}</Text>
+              <Text style={styles.cellSmall}>{formatEnum(tank.status)}</Text>
+            </View>
+          ))}
+        </View>
+
+        {/* Operators */}
+        {operators.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Designated Operators</Text>
+            <View style={styles.headerRow}>
+              <Text style={[styles.cell, styles.bold]}>Name</Text>
+              <Text style={[styles.cellMedium, styles.bold]}>Class</Text>
+              <Text style={[styles.cellMedium, styles.bold]}>Certified</Text>
+              <Text style={[styles.cellMedium, styles.bold]}>Expires</Text>
+            </View>
+            {operators.map((op, idx) => (
+              <View key={idx} style={styles.row}>
+                <Text style={styles.cell}>{op.name}</Text>
+                <Text style={styles.cellMedium}>{formatEnum(op.operatorClass)}</Text>
+                <Text style={styles.cellMedium}>{formatDate(op.certificationDate)}</Text>
+                <Text style={styles.cellMedium}>{formatDate(op.certificationExpiration)}</Text>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {/* Footer */}
+        <View style={styles.footer} fixed>
+          <Text>TankGuard - UST Compliance Management</Text>
+          <Text render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
+        </View>
+      </Page>
+
+      {/* Compliance Items - separate page */}
+      <Page size="A4" style={styles.page}>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Compliance Items Detail</Text>
+
+          {/* Overdue items first */}
+          {complianceItems.filter((i) => i.status === 'OVERDUE').length > 0 && (
+            <View style={{ marginBottom: 12 }}>
+              <Text style={[styles.bold, styles.statusOverdue, { marginBottom: 4 }]}>Overdue Items</Text>
+              {complianceItems.filter((i) => i.status === 'OVERDUE').map((item, idx) => (
+                <View key={idx} style={styles.row}>
+                  <Text style={[styles.cell, { flex: 3 }]}>{item.description}</Text>
+                  <Text style={styles.cellMedium}>{item.tank ? `Tank ${item.tank.tankNumber}` : 'Facility'}</Text>
+                  <Text style={[styles.cellMedium, styles.statusOverdue]}>Due: {formatDate(item.dueDate)}</Text>
+                  <Text style={styles.cellMedium}>{item.rule?.citation || ''}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+
+          {/* Due soon */}
+          {complianceItems.filter((i) => i.status === 'DUE_SOON').length > 0 && (
+            <View style={{ marginBottom: 12 }}>
+              <Text style={[styles.bold, styles.statusDueSoon, { marginBottom: 4 }]}>Due Soon</Text>
+              {complianceItems.filter((i) => i.status === 'DUE_SOON').map((item, idx) => (
+                <View key={idx} style={styles.row}>
+                  <Text style={[styles.cell, { flex: 3 }]}>{item.description}</Text>
+                  <Text style={styles.cellMedium}>{item.tank ? `Tank ${item.tank.tankNumber}` : 'Facility'}</Text>
+                  <Text style={[styles.cellMedium, styles.statusDueSoon]}>Due: {formatDate(item.dueDate)}</Text>
+                  <Text style={styles.cellMedium}>{item.rule?.citation || ''}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+
+          {/* Upcoming */}
+          {complianceItems.filter((i) => i.status === 'UPCOMING').length > 0 && (
+            <View style={{ marginBottom: 12 }}>
+              <Text style={[styles.bold, { marginBottom: 4 }]}>Upcoming</Text>
+              {complianceItems.filter((i) => i.status === 'UPCOMING').map((item, idx) => (
+                <View key={idx} style={styles.row}>
+                  <Text style={[styles.cell, { flex: 3 }]}>{item.description}</Text>
+                  <Text style={styles.cellMedium}>{item.tank ? `Tank ${item.tank.tankNumber}` : 'Facility'}</Text>
+                  <Text style={styles.cellMedium}>Due: {formatDate(item.dueDate)}</Text>
+                  <Text style={styles.cellMedium}>{item.rule?.citation || ''}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+
+          {/* Completed */}
+          {complianceItems.filter((i) => i.status === 'COMPLETED').length > 0 && (
+            <View style={{ marginBottom: 12 }}>
+              <Text style={[styles.bold, styles.statusCompliant, { marginBottom: 4 }]}>Completed</Text>
+              {complianceItems.filter((i) => i.status === 'COMPLETED').map((item, idx) => (
+                <View key={idx} style={styles.row}>
+                  <Text style={[styles.cell, { flex: 3 }]}>{item.description}</Text>
+                  <Text style={styles.cellMedium}>{item.tank ? `Tank ${item.tank.tankNumber}` : 'Facility'}</Text>
+                  <Text style={[styles.cellMedium, styles.statusCompliant]}>Done: {formatDate(item.completedDate)}</Text>
+                  <Text style={styles.cellMedium}>{item.rule?.citation || ''}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+        </View>
+
+        <View style={styles.footer} fixed>
+          <Text>TankGuard - UST Compliance Management</Text>
+          <Text render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
+        </View>
+      </Page>
+    </Document>
+  );
+}
+
+export async function generateAuditPdf(data: AuditData): Promise<Buffer> {
+  const buffer = await renderToBuffer(<AuditReport data={data} />);
+  return Buffer.from(buffer);
+}

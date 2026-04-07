@@ -427,6 +427,28 @@ enum ReminderStatus {
 }
 
 // ============================================
+// COMPLIANCE TREND HISTORY
+// ============================================
+
+model ComplianceSnapshot {
+  id              String   @id @default(cuid())
+  customerId      String   @map("customer_id")
+  facilityId      String?  @map("facility_id")
+  snapshotDate    DateTime @map("snapshot_date")
+  complianceScore Int      @map("compliance_score")
+  totalItems      Int      @map("total_items")
+  completedItems  Int      @map("completed_items")
+  overdueItems    Int      @map("overdue_items")
+  dueSoonItems    Int      @map("due_soon_items")
+  upcomingItems   Int      @map("upcoming_items")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@index([customerId, snapshotDate])
+  @@index([facilityId, snapshotDate])
+  @@map("compliance_snapshots")
+}
+
+// ============================================
 // PROSPECT / SCRAPER MODELS
 // ============================================
 

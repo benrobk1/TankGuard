@@ -3,6 +3,7 @@
 import { useFetch } from '@/lib/hooks';
 import { LoadingSpinner } from '@/components/ui/loading';
 import { Badge } from '@/components/ui/badge';
+import { ComplianceTrendChart } from '@/components/compliance/trend-chart';
 
 interface DashboardData {
   summary: {
@@ -61,6 +62,28 @@ function formatDate(d: string) {
   return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
+async function downloadAuditPdf(facilityId: string) {
+  try {
+    const res = await fetch('/api/reports/audit/pdf', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ facilityId }),
+    });
+    if (!res.ok) throw new Error('Failed to generate PDF');
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = res.headers.get('Content-Disposition')?.split('filename="')[1]?.replace('"', '') || 'audit-report.pdf';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error('PDF download error:', err);
+  }
+}
+
 function daysUntil(d: string) {
   const diff = Math.ceil((new Date(d).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
   return diff;
@@ -111,6 +134,9 @@ export default function DashboardPage() {
           </div>
         ))}
       </div>
+
+      {/* Compliance Trend Chart */}
+      <ComplianceTrendChart />
 
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Overdue Items */}
@@ -198,15 +224,24 @@ export default function DashboardPage() {
             <p className="px-4 py-6 text-sm text-gray-500 text-center">No facilities added yet</p>
           ) : (
             data.facilities.map((f) => (
-              <a key={f.id} href={`/facilities/${f.id}`} className="px-4 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors block">
-                <div>
+              <div key={f.id} className="px-4 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                <a href={`/facilities/${f.id}`} className="flex-1">
                   <p className="text-sm font-medium text-gray-900">{f.name}</p>
                   <p className="text-xs text-gray-500">{f.city}</p>
+                </a>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-gray-500">
+                    {f._count.tanks} tanks &middot; {f._count.complianceItems} items
+                  </span>
+                  <button
+                    onClick={() => downloadAuditPdf(f.id)}
+                    className="text-xs text-blue-600 hover:text-blue-800 font-medium px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+                    title="Download audit report PDF"
+                  >
+                    PDF
+                  </button>
                 </div>
-                <div className="text-right text-sm text-gray-500">
-                  {f._count.tanks} tanks &middot; {f._count.complianceItems} items
-                </div>
-              </a>
+              </div>
             ))
           )}
         </div>
