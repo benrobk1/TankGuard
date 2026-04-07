@@ -90,6 +90,9 @@ export default function CompliancePage() {
           <option value="CERTIFICATION">Certification</option>
           <option value="TRAINING">Training</option>
           <option value="DOCUMENTATION">Documentation</option>
+          <option value="REPORTING">Reporting</option>
+          <option value="FINANCIAL">Financial</option>
+          <option value="CLOSURE">Closure</option>
         </Select>
       </div>
 

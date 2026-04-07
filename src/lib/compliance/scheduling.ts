@@ -187,16 +187,16 @@ function calculateDueDate(frequencyMonths: number | null, frequencyDays: number 
   return now;
 }
 
-function mapCategoryToItemType(category: string): 'INSPECTION' | 'TEST' | 'CERTIFICATION' | 'TRAINING' | 'DOCUMENTATION' {
+function mapCategoryToItemType(category: string): 'INSPECTION' | 'TEST' | 'CERTIFICATION' | 'TRAINING' | 'DOCUMENTATION' | 'REPORTING' | 'FINANCIAL' | 'CLOSURE' {
   switch (category) {
     case 'INSPECTION': return 'INSPECTION';
     case 'TESTING': return 'TEST';
     case 'CERTIFICATION': return 'CERTIFICATION';
     case 'TRAINING': return 'TRAINING';
+    case 'REPORTING': return 'REPORTING';
+    case 'FINANCIAL': return 'FINANCIAL';
+    case 'CLOSURE': return 'CLOSURE';
     case 'DOCUMENTATION':
-    case 'REPORTING':
-    case 'FINANCIAL':
-    case 'CLOSURE':
     default: return 'DOCUMENTATION';
   }
 }

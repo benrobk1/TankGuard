@@ -312,6 +312,9 @@ enum ComplianceItemType {
   CERTIFICATION
   TRAINING
   DOCUMENTATION
+  REPORTING
+  FINANCIAL
+  CLOSURE
 }
 
 enum ComplianceStatus {

@@ -19,7 +19,7 @@
 export interface FederalRule {
   inspectionType: string;
   ruleSource: 'EPA';
-  category: string;
+  category: 'INSPECTION' | 'TESTING' | 'CERTIFICATION' | 'TRAINING' | 'DOCUMENTATION' | 'REPORTING' | 'FINANCIAL' | 'CLOSURE';
   frequencyMonths: number | null;
   frequencyDays: number | null;
   description: string;
