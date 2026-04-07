@@ -451,6 +451,10 @@ export const stateRules: Record<string, StateRule[]> = {
       'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to DEP, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
       'EPCRA §312; 42 USC §11022',
       { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
+    rule('STATE_FL_REGISTRATION_VS_INSPECTION', 'DOCUMENTATION', 12,
+      'Annual compliance distinction: DEP registration renewal (administrative, due July 1) and visual component inspection (operational, within 12 months) are separate requirements — completing one does not satisfy the other. Verify both are completed annually. Registration renewal confirms financial and administrative compliance; visual inspection confirms physical equipment compliance. Missing either is a separate violation.',
+      'FAC 62-761.500; Section 376.303 Fla. Stats.',
+      { equipmentType: 'TANK', notes: 'Common compliance gap: operators renew registration but skip actual physical inspection, or vice versa. Both required independently.' }),
   ],
 
   // ── NEW YORK (DEC) ────────────────────────────────────────────────────
@@ -3806,6 +3810,14 @@ export const stateRules: Record<string, StateRule[]> = {
       'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to HSEM, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
       'EPCRA §312; 42 USC §11022',
       { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
+    rule('STATE_MN_TEMPORARY_CLOSURE_12_MONTH_MANDATE', 'CLOSURE', null,
+      'Temporary closure of UST systems cannot exceed 12 months without written extension approval from MPCA. After 12 months in temporary closure, facility must either: (1) Return tank to service with all corrective actions completed, (2) Submit closure extension request to MPCA with technical justification, or (3) Permanently close the tank per Minn. R. 7150.0400. Failure to take action within 12 months results in enforcement action and potential mandatory permanent closure order.',
+      'Minn. R. 7150.0200; Minn. R. 7150.0400',
+      { equipmentType: 'TANK', notes: 'Event-triggered at start of temporary closure. Strict 12-month deadline. Extension requests must be submitted BEFORE the 12-month deadline expires.' }),
+    rule('STATE_MN_CONTRACTOR_BONDING_VERIFICATION', 'CERTIFICATION', null,
+      'Before hiring contractors for UST installation, repair, removal, or closure, verify contractor holds current MPCA certification AND maintains proof of either: (a) Liability insurance ($1M minimum), (b) Surety bond, or (c) Liquid company assets per MPCA requirements. Document contractor credentials before authorizing any work. Minnesota law holds facility operators liable if uncertified or unbonded contractors perform UST work.',
+      'Minn. R. 7150; MPCA Contractor Certification Program',
+      { equipmentType: 'OPERATOR', notes: 'Event-triggered when hiring contractors. MN transfers liability to operator for contractor non-compliance. Always verify before work begins.' }),
   ],
 
   // ── MISSISSIPPI (MDEQ) ───────────────────────────────────────────────
