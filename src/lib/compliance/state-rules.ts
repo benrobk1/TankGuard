@@ -773,6 +773,10 @@ export const stateRules: Record<string, StateRule[]> = {
       'State certification required for UST installers, inspectors, and tightness testers. Comprehensive certification program including IUM, UTT certifications.',
       '25 Pa. Code Sections 245.110-245.141 (Subchapter B)',
       { equipmentType: 'OPERATOR', notes: 'PA-specific certification regime beyond federal requirements.' }),
+    rule('STATE_PA_TANK_PRECISION_INSPECTION', 'INSPECTION', 120,
+      'Tank Precision Inspection (TPI) program — DEP requires comprehensive precision testing for tanks reaching 10 years of age and every 10 years thereafter. TPI must be performed by DEP-approved third-party contractors using calibrated equipment. Inspection includes: tank integrity verification via precision tightness test, internal inspection (if accessible), corrosion assessment, structural analysis, and piping system evaluation. Results submitted to DEP within 30 days.',
+      '25 Pa. Code § 245.1; 25 Pa. Code Subchapter F',
+      { equipmentType: 'TANK', notes: 'PA-unique TPI program. Must use DEP-approved TPI contractors. 10-year initial, then every 10 years. More rigorous than standard tightness testing.' }),
     rule('STATE_PA_TIGHTNESS_TESTING', 'TESTING', null,
       'Tank tightness testing must be conducted by a DEP-certified Underground Storage Tank Tightness Tester (UTT). Line tests must detect 0.1 gph leak rate at 1.5x operating pressure.',
       '25 Pa. Code Section 245.31',
@@ -3586,6 +3590,10 @@ export const stateRules: Record<string, StateRule[]> = {
       'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to MDE, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
       'EPCRA §312; 42 USC §11022',
       { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
+    rule('STATE_MD_OIL_REMEDIATION_FUND', 'FINANCIAL', 12,
+      'Annual verification of Oil Remediation Assistance Account (ORAA, formerly ORIA) eligibility. Maryland maintains a state fund for remedial action costs at UST release sites. Facilities must maintain current registration, financial responsibility, and compliance with all MDE UST regulations to be eligible for fund assistance. Annual per-tank fee supports the fund. Verify fund eligibility status annually and maintain documentation of fee payments.',
+      'Environment Article § 7-501 et seq.; COMAR 26.10',
+      { equipmentType: 'FINANCIAL', notes: 'MD state cleanup fund. Eligibility requires compliance at time of claim. Annual fee per tank. Critical financial protection for release remediation costs.' }),
   ],
 
   // ── MASSACHUSETTS (MassDEP) ──────────────────────────────────────────
@@ -3716,6 +3724,14 @@ export const stateRules: Record<string, StateRule[]> = {
       'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to MEMA, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
       'EPCRA §312; 42 USC §11022',
       { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
+    rule('STATE_MA_LSP_ENGAGEMENT', 'CERTIFICATION', null,
+      'Licensed Site Professional (LSP) engagement required for any release response, corrective action, or site assessment activities. Massachusetts requires that all environmental site work at UST release sites be overseen by a state-licensed LSP. The LSP must submit Response Action Outcome (RAO) statements upon completion. Facility operators must engage an LSP within 72 hours of confirmed release and maintain the engagement through final cleanup certification.',
+      '310 CMR 40.0000; M.G.L. c. 21E',
+      { equipmentType: 'TANK', notes: 'Event-triggered at release. MA unique LSP program. Cannot self-manage corrective action — must use licensed professional. LSP submits RAO for regulatory closure.' }),
+    rule('STATE_MA_INSPECTOR_CERTIFICATION', 'CERTIFICATION', 36,
+      'Third-party UST inspector certification through MassDEP. All UST system inspections, installations, and removals must be performed or supervised by a MassDEP-certified UST inspector. Inspector certification must be renewed every 3 years through continuing education. Facility operators must verify their inspector holds current MassDEP certification before authorizing work.',
+      '310 CMR 80.03; 310 CMR 80.49',
+      { equipmentType: 'OPERATOR', notes: 'MA requires state-certified inspectors for all UST work. Distinct from federal operator training. Verify inspector credentials before each engagement.' }),
   ],
 
   // ── MINNESOTA (MPCA) ─────────────────────────────────────────────────
@@ -5550,6 +5566,10 @@ export const stateRules: Record<string, StateRule[]> = {
       'Annual EPCRA Tier II hazardous chemical inventory report (due March 1). Report fuel inventory quantities to EMD, Local Emergency Planning Committee (LEPC), and local fire department. Applies to facilities storing gasoline >10,000 lbs (~1,500 gallons) or diesel above threshold quantities.',
       'EPCRA §312; 42 USC §11022',
       { equipmentType: 'TANK', notes: 'Federal EPCRA requirement, state-administered. Due March 1 annually. Penalties for late/non-filing. Most fuel facilities exceed thresholds.' }),
+    rule('STATE_WA_LUST_TRUST_ELIGIBILITY', 'FINANCIAL', 12,
+      'Annual verification of Leaking Underground Storage Tank (LUST) Trust fund eligibility. Washington maintains a LUST Trust fund that provides cleanup cost assistance for petroleum releases. Eligibility requires: current facility registration, active pollution liability insurance through PLIA or equivalent, compliance with all ECY UST regulations, and payment of annual per-tank fee. Verify eligibility status and maintain documentation of fee payments annually.',
+      'RCW 70.149; WAC 173-360A',
+      { equipmentType: 'FINANCIAL', notes: 'WA LUST Trust covers cleanup costs for eligible facilities. Requires PLIA insurance + registration + compliance. Annual verification critical for financial protection.' }),
   ],
 
   // ── WEST VIRGINIA (DEP) ──────────────────────────────────────────────
