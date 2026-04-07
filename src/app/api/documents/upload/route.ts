@@ -32,6 +32,22 @@ export async function POST(request: Request) {
       );
     }
 
+    // Validate file type
+    const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp',
+      'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'text/csv', 'text/plain'];
+    const ALLOWED_EXTENSIONS = ['.pdf', '.jpg', '.jpeg', '.png', '.webp', '.doc', '.docx', '.xls', '.xlsx', '.csv', '.txt'];
+    const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25MB
+
+    const ext = path.extname(file.name).toLowerCase();
+    if (!ALLOWED_EXTENSIONS.includes(ext)) {
+      return NextResponse.json({ error: `File type ${ext} not allowed. Allowed: ${ALLOWED_EXTENSIONS.join(', ')}` }, { status: 400 });
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json({ error: 'File size exceeds 25MB limit' }, { status: 400 });
+    }
+
     // Verify facility belongs to customer
     const facility = await prisma.facility.findFirst({
       where: { id: facilityId, customerId },

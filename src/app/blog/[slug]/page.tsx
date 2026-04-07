@@ -15,6 +15,15 @@ interface BlogPost {
   metaDescription: string | null;
 }
 
+function sanitizeHtml(html: string): string {
+  // Strip script tags, event handlers, and dangerous attributes
+  return html
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/\s*on\w+\s*=\s*"[^"]*"/gi, '')
+    .replace(/\s*on\w+\s*=\s*'[^']*'/gi, '')
+    .replace(/javascript:/gi, '');
+}
+
 async function getPost(slug: string): Promise<BlogPost | null> {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
@@ -48,7 +57,9 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-12">
-        <div className="prose prose-lg max-w-none" dangerouslySetInnerHTML={{ __html: post.content }} />
+        {/* Content is from our database via /api/blog/[slug] — trusted source.
+            For user-submitted content, add DOMPurify sanitization. */}
+        <div className="prose prose-lg max-w-none" dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.content) }} />
 
         {post.tags.length > 0 && (
           <div className="mt-8 pt-6 border-t border-gray-200">

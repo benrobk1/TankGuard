@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
+import { pickAllowedFields, facilityUpdateFields } from '@/lib/validations';
 
 export async function GET(
   request: Request,
@@ -61,7 +62,7 @@ export async function PUT(
     const body = await request.json();
     const facility = await prisma.facility.update({
       where: { id },
-      data: body,
+      data: pickAllowedFields(body, facilityUpdateFields),
       include: { state: true },
     });
 

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
+import { pickAllowedFields, tankUpdateFields } from '@/lib/validations';
 
 export async function GET(
   request: Request,
@@ -59,13 +60,18 @@ export async function PUT(
     }
 
     const body = await request.json();
-    if (body.installationDate) {
-      body.installationDate = new Date(body.installationDate);
+    const data = pickAllowedFields(body, tankUpdateFields);
+    if (data.installationDate) {
+      const parsed = new Date(data.installationDate as string);
+      if (isNaN(parsed.getTime())) {
+        return NextResponse.json({ error: 'Invalid installationDate' }, { status: 400 });
+      }
+      data.installationDate = parsed;
     }
 
     const tank = await prisma.tank.update({
       where: { id },
-      data: body,
+      data,
     });
 
     return NextResponse.json({ tank });

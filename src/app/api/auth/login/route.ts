@@ -1,17 +1,21 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyPassword, createSession } from '@/lib/auth';
+import { loginSchema } from '@/lib/validations';
 
 export async function POST(request: Request) {
   try {
-    const { email, password } = await request.json();
+    const body = await request.json();
+    const result = loginSchema.safeParse(body);
 
-    if (!email || !password) {
+    if (!result.success) {
       return NextResponse.json(
-        { error: 'Email and password are required' },
+        { error: 'Validation failed', issues: result.error.issues },
         { status: 400 },
       );
     }
+
+    const { email, password } = result.data;
 
     const user = await prisma.user.findUnique({
       where: { email },

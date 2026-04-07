@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSession } from '@/lib/hooks';
 import { LoadingSpinner } from '@/components/ui/loading';
 import { Button } from '@/components/ui/button';
@@ -22,20 +22,35 @@ export default function SettingsPage() {
 
   const [billingLoading, setBillingLoading] = useState(false);
 
+  const [emailReminders, setEmailReminders] = useState(true);
+  const [weeklyDigest, setWeeklyDigest] = useState(true);
+  const [overdueAlerts, setOverdueAlerts] = useState(true);
+  const [notifSaving, setNotifSaving] = useState(false);
+  const [notifMessage, setNotifMessage] = useState('');
+
   // Initialize form values once loaded
-  useState(() => {
+  useEffect(() => {
     if (customer) {
       setCompanyName(customer.companyName || '');
     }
-  });
+  }, [customer]);
 
   async function handleSaveCompany(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
     setMessage('');
     try {
-      // In a real app, this would call an API endpoint
-      setMessage('Company information updated successfully.');
+      const res = await fetch('/api/settings/company', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ companyName, phone }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setMessage('Company information updated successfully.');
+      } else {
+        setMessage(data.error || 'Failed to update company information.');
+      }
     } catch {
       setMessage('Failed to update company information.');
     } finally {
@@ -56,14 +71,45 @@ export default function SettingsPage() {
     setPwSaving(true);
     setPwMessage('');
     try {
-      setPwMessage('Password changed successfully.');
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
+      const res = await fetch('/api/settings/password', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setPwMessage('Password changed successfully.');
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+      } else {
+        setPwMessage(data.error || 'Failed to change password.');
+      }
     } catch {
       setPwMessage('Failed to change password.');
     } finally {
       setPwSaving(false);
+    }
+  }
+
+  async function handleSaveNotifications() {
+    setNotifSaving(true);
+    setNotifMessage('');
+    try {
+      const res = await fetch('/api/settings/notifications', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ emailReminders, weeklyDigest, overdueAlerts }),
+      });
+      if (res.ok) {
+        setNotifMessage('Notification preferences saved.');
+      } else {
+        setNotifMessage('Failed to save notification preferences.');
+      }
+    } catch {
+      setNotifMessage('Failed to save notification preferences.');
+    } finally {
+      setNotifSaving(false);
     }
   }
 
@@ -110,26 +156,28 @@ export default function SettingsPage() {
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Notification Preferences</h2>
         <div className="space-y-4">
           <label className="flex items-center gap-3">
-            <input type="checkbox" defaultChecked className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+            <input type="checkbox" checked={emailReminders} onChange={e => setEmailReminders(e.target.checked)} className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
             <div>
               <p className="text-sm font-medium text-gray-900">Email Reminders</p>
               <p className="text-xs text-gray-500">Receive email reminders for upcoming compliance deadlines</p>
             </div>
           </label>
           <label className="flex items-center gap-3">
-            <input type="checkbox" defaultChecked className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+            <input type="checkbox" checked={weeklyDigest} onChange={e => setWeeklyDigest(e.target.checked)} className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
             <div>
               <p className="text-sm font-medium text-gray-900">Weekly Digest</p>
               <p className="text-xs text-gray-500">Weekly summary of compliance status across all facilities</p>
             </div>
           </label>
           <label className="flex items-center gap-3">
-            <input type="checkbox" defaultChecked className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+            <input type="checkbox" checked={overdueAlerts} onChange={e => setOverdueAlerts(e.target.checked)} className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
             <div>
               <p className="text-sm font-medium text-gray-900">Overdue Alerts</p>
               <p className="text-xs text-gray-500">Daily alerts for overdue compliance items</p>
             </div>
           </label>
+          {notifMessage && <Alert variant={notifMessage.includes('saved') ? 'success' : 'error'}>{notifMessage}</Alert>}
+          <Button onClick={handleSaveNotifications} loading={notifSaving}>Save Preferences</Button>
         </div>
       </div>
 

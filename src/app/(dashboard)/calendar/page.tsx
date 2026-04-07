@@ -77,9 +77,9 @@ export default function CalendarPage() {
         {/* Calendar Grid */}
         <div className="lg:col-span-2 bg-white rounded-lg border border-gray-200 p-4">
           <div className="flex items-center justify-between mb-4">
-            <button onClick={prevMonth} className="p-1.5 hover:bg-gray-100 rounded-lg"><ChevronLeft className="h-5 w-5" /></button>
+            <button onClick={prevMonth} className="p-1.5 hover:bg-gray-100 rounded-lg" aria-label="Previous month"><ChevronLeft className="h-5 w-5" /></button>
             <h2 className="text-lg font-semibold text-gray-900">{monthName}</h2>
-            <button onClick={nextMonth} className="p-1.5 hover:bg-gray-100 rounded-lg"><ChevronRight className="h-5 w-5" /></button>
+            <button onClick={nextMonth} className="p-1.5 hover:bg-gray-100 rounded-lg" aria-label="Next month"><ChevronRight className="h-5 w-5" /></button>
           </div>
 
           <div className="grid grid-cols-7 gap-px bg-gray-200 rounded-lg overflow-hidden">

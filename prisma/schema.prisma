@@ -116,6 +116,8 @@ model Facility {
   documents       Document[]
   reminders       Reminder[]
 
+  @@index([customerId])
+  @@index([stateId])
   @@map("facilities")
 }
 
@@ -153,6 +155,7 @@ model Tank {
   complianceItems ComplianceItem[]
   documents       Document[]
 
+  @@index([facilityId])
   @@map("tanks")
 }
 
@@ -257,6 +260,9 @@ model ComplianceRule {
   state           State?          @relation(fields: [stateId], references: [id])
   complianceItems ComplianceItem[]
 
+  @@index([stateId])
+  @@index([inspectionType])
+  @@index([category])
   @@map("compliance_rules")
 }
 
@@ -373,6 +379,8 @@ model Document {
   tank           Tank?           @relation(fields: [tankId], references: [id], onDelete: Cascade)
   complianceItem ComplianceItem? @relation(fields: [complianceItemId], references: [id], onDelete: SetNull)
 
+  @@index([facilityId])
+  @@index([complianceItemId])
   @@map("documents")
 }
 
