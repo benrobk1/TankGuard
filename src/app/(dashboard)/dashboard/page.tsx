@@ -45,6 +45,7 @@ interface DashboardData {
     name: string;
     city: string;
     _count: { tanks: number; complianceItems: number };
+    complianceSummary?: { total: number; completed: number; overdue: number };
   }>;
 }
 
@@ -139,6 +140,43 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Priority Actions — what the operator should do RIGHT NOW */}
+      {(summary.overdue > 0 || summary.dueSoon > 0) && (
+        <div className="bg-white rounded-lg border-2 border-blue-300 p-5">
+          <h2 className="text-lg font-bold text-gray-900 mb-3">What You Need To Do</h2>
+          <div className="space-y-2">
+            {summary.overdue > 0 && (
+              <div className="flex items-center gap-3 bg-red-50 rounded-lg px-4 py-3">
+                <span className="text-red-600 text-2xl font-bold">{summary.overdue}</span>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-red-800">
+                    {summary.overdue === 1 ? 'item is' : 'items are'} overdue
+                  </p>
+                  <p className="text-xs text-red-600">Overdue items may result in fines or delivery prohibition</p>
+                </div>
+                <a href="/compliance?status=OVERDUE" className="text-sm font-semibold text-red-700 bg-red-100 px-3 py-1.5 rounded-md hover:bg-red-200 transition-colors shrink-0">
+                  Fix Now
+                </a>
+              </div>
+            )}
+            {summary.dueSoon > 0 && (
+              <div className="flex items-center gap-3 bg-yellow-50 rounded-lg px-4 py-3">
+                <span className="text-yellow-600 text-2xl font-bold">{summary.dueSoon}</span>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-yellow-800">
+                    {summary.dueSoon === 1 ? 'item' : 'items'} due soon
+                  </p>
+                  <p className="text-xs text-yellow-600">Schedule these before they become overdue</p>
+                </div>
+                <a href="/compliance?status=DUE_SOON" className="text-sm font-semibold text-yellow-700 bg-yellow-100 px-3 py-1.5 rounded-md hover:bg-yellow-200 transition-colors shrink-0">
+                  View All
+                </a>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -255,26 +293,36 @@ export default function DashboardPage() {
           {data.facilities.length === 0 ? (
             <p className="px-4 py-6 text-sm text-gray-500 text-center">No facilities added yet</p>
           ) : (
-            data.facilities.map((f) => (
-              <div key={f.id} className="px-4 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors">
-                <a href={`/facilities/${f.id}`} className="flex-1">
-                  <p className="text-sm font-medium text-gray-900">{f.name}</p>
-                  <p className="text-xs text-gray-500">{f.city}</p>
-                </a>
-                <div className="flex items-center gap-3">
-                  <span className="text-sm text-gray-500">
-                    {f._count.tanks} tanks &middot; {f._count.complianceItems} items
-                  </span>
-                  <button
-                    onClick={() => downloadAuditPdf(f.id)}
-                    className="text-xs text-blue-600 hover:text-blue-800 font-medium px-2 py-1 rounded hover:bg-blue-50 transition-colors"
-                    title="Download audit report PDF"
-                  >
-                    PDF
-                  </button>
+            data.facilities.map((f) => {
+              const cs = f.complianceSummary;
+              const facilityScore = cs && cs.total > 0 ? Math.round((cs.completed / cs.total) * 100) : null;
+              const scoreColor = facilityScore === null ? 'text-gray-400' : facilityScore >= 80 ? 'text-green-600' : facilityScore >= 50 ? 'text-yellow-600' : 'text-red-600';
+              return (
+                <div key={f.id} className="px-4 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                  <a href={`/facilities/${f.id}`} className="flex-1">
+                    <p className="text-sm font-medium text-gray-900">{f.name}</p>
+                    <p className="text-xs text-gray-500">{f.city} &middot; {f._count.tanks} tanks</p>
+                  </a>
+                  <div className="flex items-center gap-4">
+                    {facilityScore !== null && (
+                      <div className="text-right">
+                        <p className={`text-lg font-bold ${scoreColor}`}>{facilityScore}%</p>
+                        {cs && cs.overdue > 0 && (
+                          <p className="text-xs text-red-500">{cs.overdue} overdue</p>
+                        )}
+                      </div>
+                    )}
+                    <button
+                      onClick={() => downloadAuditPdf(f.id)}
+                      className="text-xs text-blue-600 hover:text-blue-800 font-medium px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+                      title="Download audit report PDF"
+                    >
+                      PDF
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       </div>

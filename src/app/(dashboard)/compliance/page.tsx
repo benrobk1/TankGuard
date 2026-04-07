@@ -66,6 +66,7 @@ export default function CompliancePage() {
   const [typeFilter, setTypeFilter] = useState('');
   const [page, setPage] = useState(1);
   const [completeId, setCompleteId] = useState<string | null>(null);
+  const [completeForm, setCompleteForm] = useState({ completedBy: '', notes: '', documentUrl: '' });
   const [saving, setSaving] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [createForm, setCreateForm] = useState({ facilityId: '', tankId: '', description: '', dueDate: '', itemType: 'CLOSURE' });
@@ -87,10 +88,16 @@ export default function CompliancePage() {
       const res = await fetch('/api/compliance/complete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ complianceItemId: itemId }),
+        body: JSON.stringify({
+          complianceItemId: itemId,
+          completedBy: completeForm.completedBy || undefined,
+          notes: completeForm.notes || undefined,
+          documentUrl: completeForm.documentUrl || undefined,
+        }),
       });
       if (!res.ok) throw new Error('Failed');
       setCompleteId(null);
+      setCompleteForm({ completedBy: '', notes: '', documentUrl: '' });
       mutate();
     } catch { alert('Failed to complete item'); }
     finally { setSaving(false); }
@@ -186,7 +193,12 @@ export default function CompliancePage() {
               <tbody className="divide-y divide-gray-100">
                 {data.items.map(item => (
                   <tr key={item.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 max-w-xs truncate">{item.description}</td>
+                    <td className="px-4 py-3 max-w-xs">
+                      <p className="truncate text-gray-900">{item.description}</p>
+                      {item.rule?.citation && (
+                        <p className="text-xs text-gray-400 mt-0.5">{item.rule.citation}</p>
+                      )}
+                    </td>
                     <td className="px-4 py-3">{item.facility.name}</td>
                     <td className="px-4 py-3">
                       {item.tank ? (
@@ -232,12 +244,47 @@ export default function CompliancePage() {
         </>
       )}
 
-      <Modal isOpen={!!completeId} onClose={() => setCompleteId(null)} title="Mark as Complete">
+      <Modal isOpen={!!completeId} onClose={() => { setCompleteId(null); setCompleteForm({ completedBy: '', notes: '', documentUrl: '' }); }} title="Mark as Complete">
         <div className="space-y-4">
-          <p className="text-sm text-gray-600">Mark this compliance item as completed?</p>
-          <div className="flex gap-3">
-            <Button variant="secondary" onClick={() => setCompleteId(null)}>Cancel</Button>
-            <Button onClick={() => completeId && handleComplete(completeId)} loading={saving}>Confirm</Button>
+          <p className="text-sm text-gray-600">Record completion details for your compliance records. Inspectors may ask for this documentation.</p>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Completed By</label>
+            <input
+              type="text"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={completeForm.completedBy}
+              onChange={(e) => setCompleteForm({ ...completeForm, completedBy: e.target.value })}
+              placeholder="Name of person or company who performed the work"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Document URL (optional)</label>
+            <input
+              type="url"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={completeForm.documentUrl}
+              onChange={(e) => setCompleteForm({ ...completeForm, documentUrl: e.target.value })}
+              placeholder="Link to inspection report, certificate, or uploaded proof"
+            />
+            <p className="text-xs text-gray-400 mt-1">Paste a link to the report, certificate, or test results</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Notes (optional)</label>
+            <textarea
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              rows={2}
+              value={completeForm.notes}
+              onChange={(e) => setCompleteForm({ ...completeForm, notes: e.target.value })}
+              placeholder="Any additional details, findings, or follow-up needed"
+            />
+          </div>
+
+          <div className="flex gap-3 pt-2">
+            <Button variant="secondary" onClick={() => { setCompleteId(null); setCompleteForm({ completedBy: '', notes: '', documentUrl: '' }); }}>Cancel</Button>
+            <Button onClick={() => completeId && handleComplete(completeId)} loading={saving}>Mark Complete</Button>
           </div>
         </div>
       </Modal>
