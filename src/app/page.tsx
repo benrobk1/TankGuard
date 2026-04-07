@@ -371,8 +371,11 @@ export default function Home() {
             </nav>
           </div>
 
-          <div className="mt-8 border-t border-white/10 pt-8 text-sm text-center">
-            &copy; {new Date().getFullYear()} TankGuard. All rights reserved.
+          <div className="mt-8 border-t border-white/10 pt-8 text-sm text-center space-y-3">
+            <p className="text-xs text-slate-500 max-w-2xl mx-auto">
+              TankGuard is a compliance tracking tool and does not constitute legal, regulatory, or environmental advice. You are responsible for verifying compliance requirements with your state implementing agency.
+            </p>
+            <p>&copy; {new Date().getFullYear()} TankGuard. All rights reserved.</p>
           </div>
         </div>
       </footer>

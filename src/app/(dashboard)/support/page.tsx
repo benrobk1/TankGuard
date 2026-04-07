@@ -97,6 +97,14 @@ export default function SupportPage() {
           ))}
         </div>
       </div>
+
+      {/* Legal Disclaimer */}
+      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+        <p className="text-sm font-medium text-amber-900">Important Disclaimer</p>
+        <p className="text-xs text-amber-700 mt-1">
+          TankGuard is a compliance tracking and scheduling tool. It does not provide legal, regulatory, or environmental advice. Compliance deadlines and requirements are based on our interpretation of federal and state regulations and may not reflect the most recent amendments. You are solely responsible for ensuring your facilities comply with all applicable laws. Always consult your state implementing agency and/or a qualified environmental compliance professional for authoritative guidance.
+        </p>
+      </div>
     </div>
   );
 }
