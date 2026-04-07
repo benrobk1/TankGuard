@@ -326,6 +326,11 @@ export default function DashboardPage() {
           )}
         </div>
       </div>
+
+      {/* Legal Disclaimer */}
+      <p className="text-xs text-gray-400 mt-4">
+        TankGuard is a compliance tracking tool and does not constitute legal, regulatory, or environmental advice. You are responsible for verifying all deadlines and requirements with your state regulatory agency. Consult a qualified environmental compliance professional for guidance specific to your facilities.
+      </p>
     </div>
   );
 }

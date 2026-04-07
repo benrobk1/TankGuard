@@ -201,7 +201,7 @@ function AuditReport({ data }: { data: AuditData }) {
 
         {/* Footer */}
         <View style={styles.footer} fixed>
-          <Text>TankGuard - UST Compliance Management</Text>
+          <Text>TankGuard - UST Compliance Tracking | Not legal or regulatory advice. Verify requirements with your implementing agency.</Text>
           <Text render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
         </View>
       </Page>
@@ -257,7 +257,7 @@ function AuditReport({ data }: { data: AuditData }) {
         </View>
 
         <View style={styles.footer} fixed>
-          <Text>TankGuard - UST Compliance Management</Text>
+          <Text>TankGuard - UST Compliance Tracking | Not legal or regulatory advice. Verify requirements with your implementing agency.</Text>
           <Text render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
         </View>
       </Page>
