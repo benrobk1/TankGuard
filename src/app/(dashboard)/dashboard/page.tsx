@@ -21,6 +21,7 @@ interface DashboardData {
     description: string;
     dueDate: string;
     status: string;
+    itemType: string;
     facility: { name: string };
     tank?: { tankNumber: string } | null;
   }>;
@@ -29,6 +30,7 @@ interface DashboardData {
     description: string;
     dueDate: string;
     status: string;
+    itemType: string;
     facility: { name: string };
     tank?: { tankNumber: string } | null;
   }>;
@@ -89,6 +91,24 @@ function daysUntil(d: string) {
   return diff;
 }
 
+const TYPE_LABELS: Record<string, string> = {
+  INSPECTION: 'Inspection', TEST: 'Test', CERTIFICATION: 'Certification', TRAINING: 'Training',
+  DOCUMENTATION: 'Documentation', REPORTING: 'Reporting', FINANCIAL: 'Financial', CLOSURE: 'Closure',
+};
+
+function isCriticalType(itemType: string) {
+  return itemType === 'REPORTING' || itemType === 'FINANCIAL';
+}
+
+function TypeBadge({ type }: { type: string }) {
+  const critical = isCriticalType(type);
+  return (
+    <span className={`text-xs font-semibold px-1.5 py-0.5 rounded ${critical ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-600'}`}>
+      {TYPE_LABELS[type] || type}
+    </span>
+  );
+}
+
 export default function DashboardPage() {
   const { data, loading, error } = useFetch<DashboardData>('/api/dashboard');
 
@@ -147,12 +167,18 @@ export default function DashboardPage() {
             </div>
             <div className="divide-y divide-gray-100">
               {data.overdueItems.slice(0, 10).map((item) => (
-                <div key={item.id} className="px-4 py-3 flex items-center justify-between">
+                <div key={item.id} className={`px-4 py-3 flex items-center justify-between ${isCriticalType(item.itemType) ? 'bg-red-50' : ''}`}>
                   <div>
-                    <p className="text-sm font-medium text-gray-900">{item.description}</p>
-                    <p className="text-xs text-gray-500">{item.facility.name}{item.tank ? ` - Tank ${item.tank.tankNumber}` : ''}</p>
+                    <p className="text-sm font-medium text-gray-900">
+                      <TypeBadge type={item.itemType} />{' '}
+                      {item.description}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {item.facility.name}
+                      {item.tank ? ` - Tank ${item.tank.tankNumber}` : ' (Facility-wide)'}
+                    </p>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right shrink-0 ml-4">
                     <Badge variant="danger">{Math.abs(daysUntil(item.dueDate))} days overdue</Badge>
                   </div>
                 </div>
@@ -173,10 +199,16 @@ export default function DashboardPage() {
               data.upcomingItems.slice(0, 7).map((item) => {
                 const days = daysUntil(item.dueDate);
                 return (
-                  <div key={item.id} className="px-4 py-3 flex items-center justify-between">
+                  <div key={item.id} className={`px-4 py-3 flex items-center justify-between ${isCriticalType(item.itemType) && days <= 7 ? 'bg-red-50' : ''}`}>
                     <div>
-                      <p className="text-sm font-medium text-gray-900">{item.description}</p>
-                      <p className="text-xs text-gray-500">{item.facility.name}</p>
+                      <p className="text-sm font-medium text-gray-900">
+                        <TypeBadge type={item.itemType} />{' '}
+                        {item.description}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {item.facility.name}
+                        {item.tank ? ` - Tank ${item.tank.tankNumber}` : ''}
+                      </p>
                     </div>
                     <div className="text-right shrink-0 ml-4">
                       <p className="text-sm text-gray-700">{formatDate(item.dueDate)}</p>

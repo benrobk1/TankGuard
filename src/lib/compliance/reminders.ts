@@ -112,6 +112,7 @@ export async function processReminders(): Promise<{ created: number; emailed: nu
             item.description,
             item.dueDate.toLocaleDateString('en-US'),
             daysOverdue,
+            item.itemType,
           );
           emailed++;
         }
@@ -124,6 +125,7 @@ export async function processReminders(): Promise<{ created: number; emailed: nu
             upcomingItems.map((i) => ({
               description: i.description,
               dueDate: i.dueDate.toLocaleDateString('en-US'),
+              itemType: i.itemType,
             })),
           );
           emailed++;

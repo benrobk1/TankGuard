@@ -29,6 +29,16 @@ const styles = StyleSheet.create({
   tankDetail: { marginBottom: 4, fontSize: 9 },
 });
 
+interface AuditComplianceItem {
+  description: string;
+  dueDate: string;
+  status: string;
+  itemType: string;
+  completedDate?: string | null;
+  tank?: { tankNumber: string } | null;
+  rule?: { citation?: string | null; inspectionType: string } | null;
+}
+
 interface AuditData {
   generatedAt: string;
   facility: {
@@ -58,14 +68,7 @@ interface AuditData {
     completed: number;
     waived: number;
   };
-  complianceItems: Array<{
-    description: string;
-    dueDate: string;
-    status: string;
-    completedDate?: string | null;
-    tank?: { tankNumber: string } | null;
-    rule?: { citation?: string | null; inspectionType: string } | null;
-  }>;
+  complianceItems: AuditComplianceItem[];
   operators: Array<{
     name: string;
     operatorClass: string;
@@ -73,6 +76,12 @@ interface AuditData {
     certificationExpiration?: string | null;
   }>;
 }
+
+const TYPE_ORDER = ['FINANCIAL', 'REPORTING', 'INSPECTION', 'TEST', 'CERTIFICATION', 'TRAINING', 'DOCUMENTATION', 'CLOSURE'];
+const TYPE_LABELS: Record<string, string> = {
+  INSPECTION: 'Inspections', TEST: 'Tests', CERTIFICATION: 'Certifications', TRAINING: 'Training',
+  DOCUMENTATION: 'Documentation', REPORTING: 'Regulatory Reporting', FINANCIAL: 'Financial Responsibility', CLOSURE: 'Closure',
+};
 
 function formatDate(d: string | null | undefined): string {
   if (!d) return 'N/A';
@@ -197,70 +206,54 @@ function AuditReport({ data }: { data: AuditData }) {
         </View>
       </Page>
 
-      {/* Compliance Items - separate page */}
+      {/* Compliance Items - separate page, grouped by status then type */}
       <Page size="A4" style={styles.page}>
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Compliance Items Detail</Text>
 
-          {/* Overdue items first */}
-          {complianceItems.filter((i) => i.status === 'OVERDUE').length > 0 && (
-            <View style={{ marginBottom: 12 }}>
-              <Text style={[styles.bold, styles.statusOverdue, { marginBottom: 4 }]}>Overdue Items</Text>
-              {complianceItems.filter((i) => i.status === 'OVERDUE').map((item, idx) => (
-                <View key={idx} style={styles.row}>
-                  <Text style={[styles.cell, { flex: 3 }]}>{item.description}</Text>
-                  <Text style={styles.cellMedium}>{item.tank ? `Tank ${item.tank.tankNumber}` : 'Facility'}</Text>
-                  <Text style={[styles.cellMedium, styles.statusOverdue]}>Due: {formatDate(item.dueDate)}</Text>
-                  <Text style={styles.cellMedium}>{item.rule?.citation || ''}</Text>
-                </View>
-              ))}
-            </View>
-          )}
+          {[
+            { status: 'OVERDUE', label: 'Overdue Items', style: styles.statusOverdue, dateLabel: 'Due' },
+            { status: 'DUE_SOON', label: 'Due Soon', style: styles.statusDueSoon, dateLabel: 'Due' },
+            { status: 'UPCOMING', label: 'Upcoming', style: {}, dateLabel: 'Due' },
+            { status: 'COMPLETED', label: 'Completed', style: styles.statusCompliant, dateLabel: 'Done' },
+          ].map(({ status, label, style, dateLabel }) => {
+            const statusItems = complianceItems.filter((i) => i.status === status);
+            if (statusItems.length === 0) return null;
 
-          {/* Due soon */}
-          {complianceItems.filter((i) => i.status === 'DUE_SOON').length > 0 && (
-            <View style={{ marginBottom: 12 }}>
-              <Text style={[styles.bold, styles.statusDueSoon, { marginBottom: 4 }]}>Due Soon</Text>
-              {complianceItems.filter((i) => i.status === 'DUE_SOON').map((item, idx) => (
-                <View key={idx} style={styles.row}>
-                  <Text style={[styles.cell, { flex: 3 }]}>{item.description}</Text>
-                  <Text style={styles.cellMedium}>{item.tank ? `Tank ${item.tank.tankNumber}` : 'Facility'}</Text>
-                  <Text style={[styles.cellMedium, styles.statusDueSoon]}>Due: {formatDate(item.dueDate)}</Text>
-                  <Text style={styles.cellMedium}>{item.rule?.citation || ''}</Text>
-                </View>
-              ))}
-            </View>
-          )}
+            // Group by itemType, ordered by TYPE_ORDER (FINANCIAL/REPORTING first)
+            const byType = TYPE_ORDER.reduce<Record<string, AuditComplianceItem[]>>((acc, type) => {
+              const items = statusItems.filter((i) => i.itemType === type);
+              if (items.length > 0) acc[type] = items;
+              return acc;
+            }, {});
+            // Also catch any items with unknown types
+            const knownTypes = new Set(TYPE_ORDER);
+            const unknownItems = statusItems.filter((i) => !knownTypes.has(i.itemType));
+            if (unknownItems.length > 0) byType['OTHER'] = unknownItems;
 
-          {/* Upcoming */}
-          {complianceItems.filter((i) => i.status === 'UPCOMING').length > 0 && (
-            <View style={{ marginBottom: 12 }}>
-              <Text style={[styles.bold, { marginBottom: 4 }]}>Upcoming</Text>
-              {complianceItems.filter((i) => i.status === 'UPCOMING').map((item, idx) => (
-                <View key={idx} style={styles.row}>
-                  <Text style={[styles.cell, { flex: 3 }]}>{item.description}</Text>
-                  <Text style={styles.cellMedium}>{item.tank ? `Tank ${item.tank.tankNumber}` : 'Facility'}</Text>
-                  <Text style={styles.cellMedium}>Due: {formatDate(item.dueDate)}</Text>
-                  <Text style={styles.cellMedium}>{item.rule?.citation || ''}</Text>
-                </View>
-              ))}
-            </View>
-          )}
-
-          {/* Completed */}
-          {complianceItems.filter((i) => i.status === 'COMPLETED').length > 0 && (
-            <View style={{ marginBottom: 12 }}>
-              <Text style={[styles.bold, styles.statusCompliant, { marginBottom: 4 }]}>Completed</Text>
-              {complianceItems.filter((i) => i.status === 'COMPLETED').map((item, idx) => (
-                <View key={idx} style={styles.row}>
-                  <Text style={[styles.cell, { flex: 3 }]}>{item.description}</Text>
-                  <Text style={styles.cellMedium}>{item.tank ? `Tank ${item.tank.tankNumber}` : 'Facility'}</Text>
-                  <Text style={[styles.cellMedium, styles.statusCompliant]}>Done: {formatDate(item.completedDate)}</Text>
-                  <Text style={styles.cellMedium}>{item.rule?.citation || ''}</Text>
-                </View>
-              ))}
-            </View>
-          )}
+            return (
+              <View key={status} style={{ marginBottom: 12 }}>
+                <Text style={[styles.bold, style, { marginBottom: 4 }]}>{label} ({statusItems.length})</Text>
+                {Object.entries(byType).map(([type, items]) => (
+                  <View key={type} style={{ marginBottom: 6 }}>
+                    <Text style={{ fontSize: 8, color: '#6b7280', marginBottom: 2, textTransform: 'uppercase' as const }}>
+                      {TYPE_LABELS[type] || type}
+                    </Text>
+                    {items.map((item, idx) => (
+                      <View key={idx} style={styles.row}>
+                        <Text style={[styles.cell, { flex: 3 }]}>{item.description}</Text>
+                        <Text style={styles.cellMedium}>{item.tank ? `Tank ${item.tank.tankNumber}` : 'Facility'}</Text>
+                        <Text style={[styles.cellMedium, style]}>
+                          {dateLabel}: {formatDate(status === 'COMPLETED' ? item.completedDate : item.dueDate)}
+                        </Text>
+                        <Text style={styles.cellMedium}>{item.rule?.citation || ''}</Text>
+                      </View>
+                    ))}
+                  </View>
+                ))}
+              </View>
+            );
+          })}
         </View>
 
         <View style={styles.footer} fixed>

@@ -43,24 +43,71 @@ export async function sendWelcomeEmail(email: string, name: string) {
   return sendEmail(email, subject, html);
 }
 
+const ITEM_TYPE_LABELS: Record<string, string> = {
+  INSPECTION: 'Inspection',
+  TEST: 'Test',
+  CERTIFICATION: 'Certification',
+  TRAINING: 'Training',
+  DOCUMENTATION: 'Documentation',
+  REPORTING: 'Reporting',
+  FINANCIAL: 'Financial',
+  CLOSURE: 'Closure',
+};
+
+const ITEM_TYPE_COLORS: Record<string, string> = {
+  INSPECTION: '#2563eb',
+  TEST: '#2563eb',
+  CERTIFICATION: '#7c3aed',
+  TRAINING: '#059669',
+  DOCUMENTATION: '#6b7280',
+  REPORTING: '#dc2626',
+  FINANCIAL: '#dc2626',
+  CLOSURE: '#d97706',
+};
+
+function itemTypeBadge(itemType: string): string {
+  const label = ITEM_TYPE_LABELS[itemType] || itemType;
+  const color = ITEM_TYPE_COLORS[itemType] || '#6b7280';
+  return `<span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;color:#fff;background:${color}">${label}</span>`;
+}
+
 export async function sendComplianceReminder(
   email: string,
   facilityName: string,
-  items: { description: string; dueDate: string }[],
+  items: { description: string; dueDate: string; itemType?: string }[],
 ) {
-  const subject = `Compliance Reminder: ${facilityName}`;
-  const itemsHtml = items
-    .map(
-      (item) =>
-        `<li><strong>${item.description}</strong> — Due: ${item.dueDate}</li>`,
-    )
-    .join('');
+  // Separate critical items (REPORTING, FINANCIAL) from standard items
+  const critical = items.filter((i) => i.itemType === 'REPORTING' || i.itemType === 'FINANCIAL');
+  const standard = items.filter((i) => i.itemType !== 'REPORTING' && i.itemType !== 'FINANCIAL');
+
+  const hasCritical = critical.length > 0;
+  const subject = hasCritical
+    ? `ACTION REQUIRED: Regulatory/Financial Deadline — ${facilityName}`
+    : `Compliance Reminder: ${facilityName}`;
+
+  const formatItem = (item: typeof items[0]) =>
+    `<li style="margin-bottom:8px;">
+      ${item.itemType ? itemTypeBadge(item.itemType) + ' ' : ''}
+      <strong>${item.description}</strong> — Due: ${item.dueDate}
+    </li>`;
+
+  const criticalHtml = critical.length > 0
+    ? `<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:12px;margin-bottom:16px;">
+        <p style="color:#dc2626;font-weight:bold;margin:0 0 8px;">Critical Deadlines</p>
+        <ul style="margin:0;padding-left:20px;">${critical.map(formatItem).join('')}</ul>
+      </div>`
+    : '';
+
+  const standardHtml = standard.length > 0
+    ? `<ul style="padding-left:20px;">${standard.map(formatItem).join('')}</ul>`
+    : '';
 
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <h1 style="color: #1a56db;">Compliance Reminder</h1>
       <p>The following compliance items are coming due for <strong>${facilityName}</strong>:</p>
-      <ul>${itemsHtml}</ul>
+      ${criticalHtml}
+      ${standardHtml}
       <p>Log in to TankGuard to mark items complete or upload documentation.</p>
       <p>— The TankGuard Team</p>
     </div>
@@ -121,17 +168,35 @@ export async function sendOverdueAlert(
   itemDescription: string,
   dueDate: string,
   daysOverdue: number,
+  itemType?: string,
 ) {
-  const subject = `OVERDUE: ${itemDescription} — ${facilityName}`;
+  const isFinancialOrReporting = itemType === 'FINANCIAL' || itemType === 'REPORTING';
+  const subject = isFinancialOrReporting
+    ? `URGENT: Overdue ${ITEM_TYPE_LABELS[itemType!] || ''} Deadline — ${facilityName}`
+    : `OVERDUE: ${itemDescription} — ${facilityName}`;
+
+  const urgencyBanner = isFinancialOrReporting
+    ? `<div style="background:#fef2f2;border:2px solid #dc2626;border-radius:8px;padding:12px;margin-bottom:16px;">
+        <p style="color:#dc2626;font-weight:bold;margin:0;">
+          ${itemType === 'FINANCIAL' ? 'Financial responsibility lapse may trigger delivery prohibition.' : 'Overdue regulatory reporting may result in enforcement action.'}
+        </p>
+      </div>`
+    : '';
+
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <h1 style="color: #dc2626;">Overdue Compliance Alert</h1>
+      ${urgencyBanner}
       <p>A compliance item at <strong>${facilityName}</strong> is now <strong>${daysOverdue} day${daysOverdue === 1 ? '' : 's'} overdue</strong>.</p>
       <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
         <tr>
           <td style="padding: 8px; border: 1px solid #e5e7eb; font-weight: bold;">Item</td>
           <td style="padding: 8px; border: 1px solid #e5e7eb;">${itemDescription}</td>
         </tr>
+        ${itemType ? `<tr>
+          <td style="padding: 8px; border: 1px solid #e5e7eb; font-weight: bold;">Type</td>
+          <td style="padding: 8px; border: 1px solid #e5e7eb;">${itemTypeBadge(itemType)}</td>
+        </tr>` : ''}
         <tr>
           <td style="padding: 8px; border: 1px solid #e5e7eb; font-weight: bold;">Due Date</td>
           <td style="padding: 8px; border: 1px solid #e5e7eb;">${dueDate}</td>

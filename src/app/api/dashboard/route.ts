@@ -44,12 +44,13 @@ export async function GET() {
       completed: allComplianceItems.filter((i) => i.status === 'COMPLETED').length,
     };
 
-    // Upcoming items (next 7 days)
+    // Upcoming items (next 30 days — wider window to catch regulatory deadlines)
+    const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
     const upcomingItems = await prisma.complianceItem.findMany({
       where: {
         facility: { customerId },
         status: { in: ['UPCOMING', 'DUE_SOON'] },
-        dueDate: { gte: now, lte: sevenDaysFromNow },
+        dueDate: { gte: now, lte: thirtyDaysFromNow },
       },
       include: {
         facility: { select: { id: true, name: true } },
@@ -59,7 +60,7 @@ export async function GET() {
       take: 10,
     });
 
-    // Overdue items
+    // Overdue items — prioritize FINANCIAL/REPORTING first (delivery prohibition risk)
     const overdueItems = await prisma.complianceItem.findMany({
       where: {
         facility: { customerId },
@@ -70,7 +71,15 @@ export async function GET() {
         tank: { select: { id: true, tankNumber: true } },
       },
       orderBy: { dueDate: 'asc' },
-      take: 10,
+      take: 20,
+    });
+
+    // Sort overdue: FINANCIAL/REPORTING first, then by date
+    overdueItems.sort((a, b) => {
+      const aCritical = a.itemType === 'FINANCIAL' || a.itemType === 'REPORTING' ? 0 : 1;
+      const bCritical = b.itemType === 'FINANCIAL' || b.itemType === 'REPORTING' ? 0 : 1;
+      if (aCritical !== bCritical) return aCritical - bCritical;
+      return a.dueDate.getTime() - b.dueDate.getTime();
     });
 
     // Recent completions

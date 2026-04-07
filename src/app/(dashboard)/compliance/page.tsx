@@ -22,18 +22,43 @@ interface ComplianceItem {
 
 interface ComplianceResponse {
   items: ComplianceItem[];
-  total: number;
-  page: number;
-  totalPages: number;
+  pagination: {
+    total: number;
+    page: number;
+    totalPages: number;
+    limit: number;
+  };
 }
 
 const statusBadge: Record<string, 'success' | 'warning' | 'danger' | 'info' | 'neutral'> = {
   UPCOMING: 'info', DUE_SOON: 'warning', OVERDUE: 'danger', COMPLETED: 'success', WAIVED: 'neutral',
 };
 
+const typeLabels: Record<string, string> = {
+  INSPECTION: 'Inspection', TEST: 'Test', CERTIFICATION: 'Certification', TRAINING: 'Training',
+  DOCUMENTATION: 'Documentation', REPORTING: 'Reporting', FINANCIAL: 'Financial', CLOSURE: 'Closure',
+};
+
+const typeBadgeColor: Record<string, string> = {
+  INSPECTION: 'bg-blue-100 text-blue-800',
+  TEST: 'bg-blue-100 text-blue-800',
+  CERTIFICATION: 'bg-purple-100 text-purple-800',
+  TRAINING: 'bg-green-100 text-green-800',
+  DOCUMENTATION: 'bg-gray-100 text-gray-800',
+  REPORTING: 'bg-red-100 text-red-800',
+  FINANCIAL: 'bg-red-100 text-red-800',
+  CLOSURE: 'bg-yellow-100 text-yellow-800',
+};
+
 function formatDate(d: string | null) {
   if (!d) return '—';
   return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+interface FacilitySummary {
+  id: string;
+  name: string;
+  tanks: Array<{ id: string; tankNumber: string }>;
 }
 
 export default function CompliancePage() {
@@ -42,6 +67,11 @@ export default function CompliancePage() {
   const [page, setPage] = useState(1);
   const [completeId, setCompleteId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [showCreate, setShowCreate] = useState(false);
+  const [createForm, setCreateForm] = useState({ facilityId: '', tankId: '', description: '', dueDate: '', itemType: 'CLOSURE' });
+  const [creating, setCreating] = useState(false);
+
+  const { data: facilitiesData } = useFetch<{ facilities: FacilitySummary[] }>('/api/facilities?includeTanks=true');
 
   const params = new URLSearchParams();
   if (statusFilter) params.set('status', statusFilter);
@@ -66,11 +96,45 @@ export default function CompliancePage() {
     finally { setSaving(false); }
   }
 
+  async function handleCreate() {
+    if (!createForm.facilityId || !createForm.description || !createForm.dueDate) return;
+    setCreating(true);
+    try {
+      const res = await fetch('/api/compliance/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          facilityId: createForm.facilityId,
+          tankId: createForm.tankId || undefined,
+          description: createForm.description,
+          dueDate: createForm.dueDate,
+          itemType: createForm.itemType,
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Failed');
+      }
+      setShowCreate(false);
+      setCreateForm({ facilityId: '', tankId: '', description: '', dueDate: '', itemType: 'CLOSURE' });
+      mutate();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to create item');
+    } finally {
+      setCreating(false);
+    }
+  }
+
+  const selectedFacility = facilitiesData?.facilities?.find((f) => f.id === createForm.facilityId);
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Compliance Items</h1>
-        <p className="text-gray-500 mt-1">Track all compliance deadlines across your facilities</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Compliance Items</h1>
+          <p className="text-gray-500 mt-1">Track all compliance deadlines across your facilities</p>
+        </div>
+        <Button onClick={() => setShowCreate(true)}>+ Create Item</Button>
       </div>
 
       {/* Filters */}
@@ -124,8 +188,18 @@ export default function CompliancePage() {
                   <tr key={item.id} className="hover:bg-gray-50">
                     <td className="px-4 py-3 max-w-xs truncate">{item.description}</td>
                     <td className="px-4 py-3">{item.facility.name}</td>
-                    <td className="px-4 py-3">{item.tank?.tankNumber || '—'}</td>
-                    <td className="px-4 py-3">{item.itemType}</td>
+                    <td className="px-4 py-3">
+                      {item.tank ? (
+                        <span>Tank {item.tank.tankNumber}</span>
+                      ) : (
+                        <span className="text-xs font-medium text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">Facility-wide</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded ${typeBadgeColor[item.itemType] || 'bg-gray-100 text-gray-800'}`}>
+                        {typeLabels[item.itemType] || item.itemType}
+                      </span>
+                    </td>
                     <td className="px-4 py-3">{formatDate(item.dueDate)}</td>
                     <td className="px-4 py-3">
                       <Badge variant={statusBadge[item.status] || 'neutral'}>{item.status.replace('_', ' ')}</Badge>
@@ -144,14 +218,14 @@ export default function CompliancePage() {
           </div>
 
           {/* Pagination */}
-          {data.totalPages > 1 && (
+          {data.pagination.totalPages > 1 && (
             <div className="flex items-center justify-between">
               <p className="text-sm text-gray-500">
-                Showing {(data.page - 1) * 20 + 1}–{Math.min(data.page * 20, data.total)} of {data.total}
+                Showing {(data.pagination.page - 1) * 20 + 1}–{Math.min(data.pagination.page * 20, data.pagination.total)} of {data.pagination.total}
               </p>
               <div className="flex gap-2">
                 <Button variant="secondary" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>Previous</Button>
-                <Button variant="secondary" size="sm" disabled={page >= data.totalPages} onClick={() => setPage(p => p + 1)}>Next</Button>
+                <Button variant="secondary" size="sm" disabled={page >= data.pagination.totalPages} onClick={() => setPage(p => p + 1)}>Next</Button>
               </div>
             </div>
           )}
@@ -164,6 +238,74 @@ export default function CompliancePage() {
           <div className="flex gap-3">
             <Button variant="secondary" onClick={() => setCompleteId(null)}>Cancel</Button>
             <Button onClick={() => completeId && handleComplete(completeId)} loading={saving}>Confirm</Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Create Ad-Hoc Compliance Item Modal */}
+      <Modal isOpen={showCreate} onClose={() => setShowCreate(false)} title="Create Compliance Item">
+        <div className="space-y-4">
+          <p className="text-sm text-gray-600">
+            Create a one-time compliance item for events like tank closures, installations, owner changes, or other non-recurring obligations.
+          </p>
+
+          <Select label="Facility" value={createForm.facilityId} onChange={(e) => setCreateForm({ ...createForm, facilityId: e.target.value, tankId: '' })}>
+            <option value="">Select facility...</option>
+            {facilitiesData?.facilities?.map((f) => (
+              <option key={f.id} value={f.id}>{f.name}</option>
+            ))}
+          </Select>
+
+          {selectedFacility && selectedFacility.tanks.length > 0 && (
+            <Select label="Tank (optional — leave blank for facility-wide)" value={createForm.tankId} onChange={(e) => setCreateForm({ ...createForm, tankId: e.target.value })}>
+              <option value="">Facility-wide</option>
+              {selectedFacility.tanks.map((t) => (
+                <option key={t.id} value={t.id}>Tank {t.tankNumber}</option>
+              ))}
+            </Select>
+          )}
+
+          <Select label="Item Type" value={createForm.itemType} onChange={(e) => setCreateForm({ ...createForm, itemType: e.target.value })}>
+            <option value="CLOSURE">Closure</option>
+            <option value="CERTIFICATION">Certification</option>
+            <option value="INSPECTION">Inspection</option>
+            <option value="TEST">Test</option>
+            <option value="TRAINING">Training</option>
+            <option value="DOCUMENTATION">Documentation</option>
+            <option value="REPORTING">Reporting</option>
+            <option value="FINANCIAL">Financial</option>
+          </Select>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <textarea
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              rows={3}
+              value={createForm.description}
+              onChange={(e) => setCreateForm({ ...createForm, description: e.target.value })}
+              placeholder="e.g., Tank #3 permanent closure — notify DEQ 30 days in advance"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
+            <input
+              type="date"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={createForm.dueDate}
+              onChange={(e) => setCreateForm({ ...createForm, dueDate: e.target.value })}
+            />
+          </div>
+
+          <div className="flex gap-3 pt-2">
+            <Button variant="secondary" onClick={() => setShowCreate(false)}>Cancel</Button>
+            <Button
+              onClick={handleCreate}
+              loading={creating}
+              disabled={!createForm.facilityId || !createForm.description || !createForm.dueDate}
+            >
+              Create Item
+            </Button>
           </div>
         </div>
       </Modal>
