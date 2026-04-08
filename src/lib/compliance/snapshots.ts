@@ -10,7 +10,7 @@ export async function recordComplianceSnapshots(): Promise<number> {
   const snapshotDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
   const customers = await prisma.customer.findMany({
-    where: { status: { in: ['ACTIVE', 'TRIAL'] } },
+    where: { status: 'ACTIVE' },
     include: {
       facilities: {
         include: {

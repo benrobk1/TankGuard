@@ -156,7 +156,7 @@ export async function getSystemHealth() {
   const [
     totalCustomers,
     activeSubscriptions,
-    trialCustomers,
+    pendingCustomers,
     totalFacilities,
     totalTanks,
     overdueItems,
@@ -166,7 +166,7 @@ export async function getSystemHealth() {
   ] = await Promise.all([
     prisma.customer.count(),
     prisma.customer.count({ where: { status: 'ACTIVE' } }),
-    prisma.customer.count({ where: { status: 'TRIAL' } }),
+    prisma.customer.count({ where: { status: 'PENDING' } }),
     prisma.facility.count(),
     prisma.tank.count(),
     prisma.complianceItem.count({ where: { status: 'OVERDUE' } }),
@@ -182,7 +182,7 @@ export async function getSystemHealth() {
     customers: {
       total: totalCustomers,
       active: activeSubscriptions,
-      trial: trialCustomers,
+      pending: pendingCustomers,
       incompleteOnboarding,
     },
     facilities: {
