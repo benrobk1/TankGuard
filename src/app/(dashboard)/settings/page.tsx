@@ -191,7 +191,7 @@ export default function SettingsPage() {
           </div>
           <div className="flex justify-between">
             <span className="text-gray-500">Status</span>
-            <span className="font-medium text-green-600">{customer?.subscriptionStatus || 'Pending'}</span>
+            <span className="font-medium text-green-600">{customer?.status || 'Pending'}</span>
           </div>
         </div>
         <Button variant="secondary" className="mt-4" onClick={openBillingPortal} loading={billingLoading}>

@@ -6,8 +6,7 @@ import { useFetch } from '@/lib/hooks';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
-import { LoadingSpinner } from '@/components/ui/loading';
-import { CheckCircle, ChevronRight, Shield } from 'lucide-react';
+import { CheckCircle, ChevronRight, Shield, Plus, Building2 } from 'lucide-react';
 
 const US_STATES = [
   'AL','AK','AZ','AR','CA','CO','CT','DE','DC','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME',
@@ -30,16 +29,34 @@ const steps = [
   { num: 7, label: 'Subscribe' },
 ];
 
+interface CompletedFacility {
+  id: string;
+  name: string;
+  state: string;
+  tankCount: number;
+  operatorCount: number;
+}
+
+const DEFAULT_TANK = {
+  tankNumber: 'T-1', capacityGallons: '10000', productStored: 'REGULAR_GASOLINE',
+  material: 'FIBERGLASS', leakDetectionMethod: 'ATG',
+  corrosionProtectionType: 'FIBERGLASS_NO_CP_NEEDED', dontKnowCP: false,
+};
+
+const DEFAULT_OPERATOR = { name: '', operatorClass: 'CLASS_A', certificationDate: '', notSure: false };
+
 export default function OnboardingPage() {
   const router = useRouter();
   const { data: states } = useFetch<Array<{ id: string; abbreviation: string; name: string }>>('/api/states');
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
 
-  // Step 1: State selection
-  const [selectedState, setSelectedState] = useState('');
+  // Multi-facility tracking
+  const [completedFacilities, setCompletedFacilities] = useState<CompletedFacility[]>([]);
+  const [showAddMore, setShowAddMore] = useState(false);
 
-  // Step 2: Facility info
+  // Current facility state
+  const [selectedState, setSelectedState] = useState('');
   const [facility, setFacility] = useState({
     name: '', address: '', city: '', zip: '', stateId: '',
     registrationNumber: '', facilityType: 'GAS_STATION',
@@ -47,16 +64,10 @@ export default function OnboardingPage() {
   const [facilityId, setFacilityId] = useState('');
 
   // Step 3: Tanks
-  const [tanks, setTanks] = useState([{
-    tankNumber: 'T-1', capacityGallons: '10000', productStored: 'REGULAR_GASOLINE',
-    material: 'FIBERGLASS', leakDetectionMethod: 'ATG',
-    corrosionProtectionType: 'FIBERGLASS_NO_CP_NEEDED', dontKnowCP: false,
-  }]);
+  const [tanks, setTanks] = useState([{ ...DEFAULT_TANK }]);
 
   // Step 4: Operators
-  const [operators, setOperators] = useState([{
-    name: '', operatorClass: 'CLASS_A', certificationDate: '', notSure: false,
-  }]);
+  const [operators, setOperators] = useState([{ ...DEFAULT_OPERATOR }]);
 
   // Step 5: Last inspection dates
   const [neverTracked, setNeverTracked] = useState(false);
@@ -129,23 +140,65 @@ export default function OnboardingPage() {
           }),
         });
       }
-      setStep(5);
+      // Track this facility as completed
+      setCompletedFacilities(prev => [...prev, {
+        id: facilityId,
+        name: facility.name,
+        state: selectedState,
+        tankCount: tanks.length,
+        operatorCount: operators.filter(o => o.name).length,
+      }]);
+      setShowAddMore(true);
     } catch { alert('Failed to add operators'); }
     finally { setSaving(false); }
+  }
+
+  function skipOperators() {
+    setCompletedFacilities(prev => [...prev, {
+      id: facilityId,
+      name: facility.name,
+      state: selectedState,
+      tankCount: tanks.length,
+      operatorCount: 0,
+    }]);
+    setShowAddMore(true);
+  }
+
+  function addAnotherFacility() {
+    setShowAddMore(false);
+    setFacilityId('');
+    setFacility({ name: '', address: '', city: '', zip: '', stateId: '', registrationNumber: '', facilityType: 'GAS_STATION' });
+    setTanks([{ ...DEFAULT_TANK }]);
+    setOperators([{ ...DEFAULT_OPERATOR }]);
+    setSelectedState('');
+    setStep(2);
+  }
+
+  function continueToHistory() {
+    setShowAddMore(false);
+    setStep(5);
   }
 
   async function generateSchedule() {
     setSaving(true);
     try {
-      const res = await fetch('/api/compliance/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ facilityId }),
-      });
-      if (!res.ok) throw new Error('Failed');
-      const data = await res.json();
-      setComplianceCount(data.totalItems || 0);
-      setOverdueCount(data.overdueItems || 0);
+      let totalItems = 0;
+      let totalOverdue = 0;
+
+      for (const f of completedFacilities) {
+        const res = await fetch('/api/compliance/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ facilityId: f.id }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          totalItems += data.totalItems || 0;
+          totalOverdue += data.overdueItems || 0;
+        }
+      }
+      setComplianceCount(totalItems);
+      setOverdueCount(totalOverdue);
       setStep(6);
     } catch {
       setComplianceCount(0);
@@ -162,10 +215,10 @@ export default function OnboardingPage() {
       if (data.url) {
         window.location.href = data.url;
       } else {
-        router.push('/dashboard');
+        alert('Unable to start checkout. Please try again.');
       }
     } catch {
-      router.push('/dashboard');
+      alert('Unable to start checkout. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -190,6 +243,8 @@ export default function OnboardingPage() {
   function updateOperator(index: number, field: string, value: string | boolean) {
     setOperators(operators.map((o, i) => i === index ? { ...o, [field]: value } : o));
   }
+
+  const totalFacilities = completedFacilities.length;
 
   return (
     <div className="max-w-2xl mx-auto py-8">
@@ -223,17 +278,11 @@ export default function OnboardingPage() {
               </div>
               <h2 className="text-2xl font-bold text-gray-900">Welcome to TankGuard</h2>
               <p className="text-gray-500 mt-2">Let&apos;s set up your compliance tracking. This takes about 5 minutes.</p>
+              <p className="text-sm text-gray-400 mt-1">You can add multiple facilities during setup.</p>
             </div>
 
-            <div>
-              <Select label="What state are your tanks in?" value={selectedState} onChange={e => setSelectedState(e.target.value)}>
-                <option value="">Select your state...</option>
-                {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
-              </Select>
-            </div>
-
-            <Button className="w-full" disabled={!selectedState} onClick={() => setStep(2)}>
-              Continue <ChevronRight className="h-4 w-4 ml-2" />
+            <Button className="w-full" onClick={() => setStep(2)}>
+              Get Started <ChevronRight className="h-4 w-4 ml-2" />
             </Button>
           </div>
         )}
@@ -241,9 +290,21 @@ export default function OnboardingPage() {
         {/* Step 2: Facility */}
         {step === 2 && (
           <div className="space-y-4">
-            <h2 className="text-xl font-bold text-gray-900">Add Your Facility</h2>
+            <h2 className="text-xl font-bold text-gray-900">
+              {totalFacilities > 0 ? `Add Facility #${totalFacilities + 1}` : 'Add Your Facility'}
+            </h2>
             <p className="text-sm text-gray-500">Enter your gas station or fueling facility details.</p>
 
+            {totalFacilities > 0 && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800">
+                You&apos;ve added {totalFacilities} {totalFacilities === 1 ? 'facility' : 'facilities'} so far. Add another below.
+              </div>
+            )}
+
+            <Select label="State *" value={selectedState} onChange={e => setSelectedState(e.target.value)}>
+              <option value="">Select your state...</option>
+              {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
+            </Select>
             <Input label="Facility Name *" required value={facility.name} onChange={e => setFacility({ ...facility, name: e.target.value })} placeholder="e.g. Main Street Gas Station" />
             <Input label="Address *" required value={facility.address} onChange={e => setFacility({ ...facility, address: e.target.value })} />
             <div className="grid grid-cols-2 gap-4">
@@ -253,8 +314,8 @@ export default function OnboardingPage() {
             <Input label="State Registration Number" value={facility.registrationNumber} onChange={e => setFacility({ ...facility, registrationNumber: e.target.value })} placeholder="Optional — helps auto-populate data" />
 
             <div className="flex gap-3 pt-2">
-              <Button variant="secondary" onClick={() => setStep(1)}>Back</Button>
-              <Button className="flex-1" onClick={createFacility} loading={saving} disabled={!facility.name || !facility.address || !facility.city || !facility.zip}>
+              <Button variant="secondary" onClick={() => { if (totalFacilities > 0) { setShowAddMore(true); setStep(4); } else { setStep(1); } }}>Back</Button>
+              <Button className="flex-1" onClick={createFacility} loading={saving} disabled={!facility.name || !facility.address || !facility.city || !facility.zip || !selectedState}>
                 Continue <ChevronRight className="h-4 w-4 ml-2" />
               </Button>
             </div>
@@ -264,7 +325,7 @@ export default function OnboardingPage() {
         {/* Step 3: Tanks */}
         {step === 3 && (
           <div className="space-y-4">
-            <h2 className="text-xl font-bold text-gray-900">Add Your Tanks</h2>
+            <h2 className="text-xl font-bold text-gray-900">Add Tanks for {facility.name}</h2>
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800">
               Most gas stations have fiberglass tanks with ATG leak detection. We&apos;ve set smart defaults — adjust if your setup is different.
             </div>
@@ -328,9 +389,9 @@ export default function OnboardingPage() {
         )}
 
         {/* Step 4: Operators */}
-        {step === 4 && (
+        {step === 4 && !showAddMore && (
           <div className="space-y-4">
-            <h2 className="text-xl font-bold text-gray-900">Add Operators</h2>
+            <h2 className="text-xl font-bold text-gray-900">Add Operators for {facility.name}</h2>
             <p className="text-sm text-gray-500">EPA requires designated Class A, B, and C operators at each UST facility.</p>
 
             {operators.map((op, i) => (
@@ -357,9 +418,52 @@ export default function OnboardingPage() {
 
             <div className="flex gap-3 pt-2">
               <Button variant="secondary" onClick={() => setStep(3)}>Back</Button>
-              <Button variant="secondary" onClick={() => setStep(5)}>Skip for now</Button>
+              <Button variant="secondary" onClick={skipOperators}>Skip for now</Button>
               <Button className="flex-1" onClick={createOperators} loading={saving}>
                 Continue <ChevronRight className="h-4 w-4 ml-2" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 4 — Add Another Facility Prompt */}
+        {step === 4 && showAddMore && (
+          <div className="space-y-6">
+            <div className="text-center">
+              <div className="flex justify-center mb-4">
+                <div className="h-14 w-14 rounded-full bg-green-100 flex items-center justify-center">
+                  <CheckCircle className="h-8 w-8 text-green-600" />
+                </div>
+              </div>
+              <h2 className="text-xl font-bold text-gray-900">Facility Added</h2>
+              <p className="text-sm text-gray-500 mt-1">Do you have more facilities to add?</p>
+            </div>
+
+            {/* Completed facilities list */}
+            <div className="space-y-2">
+              {completedFacilities.map((f, i) => (
+                <div key={f.id} className="flex items-center gap-3 rounded-lg border border-gray-200 p-3">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50">
+                    <Building2 className="h-4 w-4 text-blue-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-900 text-sm truncate">{f.name}</p>
+                    <p className="text-xs text-gray-500">{f.state} &middot; {f.tankCount} {f.tankCount === 1 ? 'tank' : 'tanks'}{f.operatorCount > 0 ? ` \u00b7 ${f.operatorCount} ${f.operatorCount === 1 ? 'operator' : 'operators'}` : ''}</p>
+                  </div>
+                  <CheckCircle className="h-5 w-5 text-green-500 shrink-0" />
+                </div>
+              ))}
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={addAnotherFacility}
+                className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-blue-300 rounded-lg text-sm font-medium text-blue-600 hover:border-blue-400 hover:bg-blue-50 transition-colors"
+              >
+                <Plus className="h-4 w-4" /> Add Another Facility
+              </button>
+              <Button className="w-full" onClick={continueToHistory}>
+                Continue to Review <ChevronRight className="h-4 w-4 ml-2" />
               </Button>
             </div>
           </div>
@@ -388,7 +492,7 @@ export default function OnboardingPage() {
             </label>
 
             <div className="flex gap-3 pt-2">
-              <Button variant="secondary" onClick={() => setStep(4)}>Back</Button>
+              <Button variant="secondary" onClick={() => { setShowAddMore(true); setStep(4); }}>Back</Button>
               <Button className="flex-1" onClick={generateSchedule} loading={saving}>
                 Generate My Schedule <ChevronRight className="h-4 w-4 ml-2" />
               </Button>
@@ -406,7 +510,9 @@ export default function OnboardingPage() {
             </div>
             <div>
               <h2 className="text-2xl font-bold text-gray-900">Your Compliance Schedule is Ready</h2>
-              <p className="text-gray-500 mt-2">Here&apos;s what TankGuard found for your facility:</p>
+              <p className="text-gray-500 mt-2">
+                Here&apos;s what TankGuard found across your {completedFacilities.length} {completedFacilities.length === 1 ? 'facility' : 'facilities'}:
+              </p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -426,12 +532,9 @@ export default function OnboardingPage() {
               </div>
             )}
 
-            <div className="flex gap-3 pt-2">
-              <Button variant="secondary" onClick={() => router.push('/dashboard')}>Go to Dashboard</Button>
-              <Button className="flex-1" onClick={() => setStep(7)}>
-                Subscribe — $99/month <ChevronRight className="h-4 w-4 ml-2" />
-              </Button>
-            </div>
+            <Button className="w-full" onClick={() => setStep(7)}>
+              Subscribe — $99/month <ChevronRight className="h-4 w-4 ml-2" />
+            </Button>
           </div>
         )}
 
@@ -456,12 +559,11 @@ export default function OnboardingPage() {
               <strong>Our Guarantee:</strong> If TankGuard misses a compliance deadline that results in a fine, we refund 12 months of subscription fees.
             </div>
 
-            <div className="flex gap-3">
-              <Button variant="secondary" onClick={() => router.push('/dashboard')}>Maybe Later</Button>
-              <Button className="flex-1" onClick={startCheckout} loading={saving}>
-                Subscribe Now — $99/month
-              </Button>
-            </div>
+            <Button className="w-full" onClick={startCheckout} loading={saving}>
+              Subscribe Now — $99/month
+            </Button>
+
+            <p className="text-xs text-gray-400">Secure payment powered by Stripe. You can cancel anytime from your account settings.</p>
           </div>
         )}
       </div>
