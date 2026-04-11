@@ -12,22 +12,35 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (loading) return;
+
+    // Not authenticated → login
+    if (!user) {
       router.push('/login');
+      return;
     }
-    // Redirect PENDING customers to onboarding (unless already there)
-    if (!loading && user && customer && customer.status === 'PENDING' && pathname !== '/onboarding') {
+
+    // PENDING (haven't paid) → subscribe page
+    if (customer?.status === 'PENDING') {
+      router.push('/subscribe');
+      return;
+    }
+
+    // ACTIVE but hasn't completed onboarding → onboarding
+    if (customer && customer.status === 'ACTIVE' && !customer.onboardingComplete && pathname !== '/onboarding') {
       router.push('/onboarding');
+      return;
     }
   }, [loading, user, customer, router, pathname]);
 
   if (loading) return <PageLoading />;
   if (!user) return null;
 
-  // While redirecting PENDING users, don't render the dashboard chrome
-  if (customer?.status === 'PENDING' && pathname !== '/onboarding') return null;
+  // Block rendering while redirecting
+  if (customer?.status === 'PENDING') return null;
+  if (customer && customer.status === 'ACTIVE' && !customer.onboardingComplete && pathname !== '/onboarding') return null;
 
-  // On the onboarding page, render without sidebar
+  // Onboarding page — render without sidebar
   if (pathname === '/onboarding') {
     return (
       <div className="min-h-screen bg-gray-50">

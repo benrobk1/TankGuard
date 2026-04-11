@@ -18,7 +18,7 @@ const faqs = [
   },
   {
     q: "How does billing work?",
-    a: "TankGuard is $99/month, billed through Stripe. You set up your account, add your facilities and tanks, and subscribe to activate your compliance dashboard. There is no free trial — you get full access to all features from day one of your subscription.",
+    a: "TankGuard is $99/month, billed through Stripe. You create your account, subscribe, and then set up your facilities and tanks. There is no free trial — you get full access to all features from day one of your subscription.",
   },
   {
     q: "What happens if regulations change?",

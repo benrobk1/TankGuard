@@ -26,7 +26,6 @@ const steps = [
   { num: 4, label: 'Operators' },
   { num: 5, label: 'History' },
   { num: 6, label: 'Review' },
-  { num: 7, label: 'Subscribe' },
 ];
 
 interface CompletedFacility {
@@ -207,18 +206,18 @@ export default function OnboardingPage() {
     finally { setSaving(false); }
   }
 
-  async function startCheckout() {
+  async function completeOnboarding() {
     setSaving(true);
     try {
-      const res = await fetch('/api/stripe/checkout', { method: 'POST' });
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        alert('Unable to start checkout. Please try again.');
-      }
+      await fetch('/api/onboarding', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ step: 7 }), // step > 6 marks onboardingComplete
+      });
+      router.push('/dashboard');
     } catch {
-      alert('Unable to start checkout. Please try again.');
+      // Still redirect — worst case they see onboarding again
+      router.push('/dashboard');
     } finally {
       setSaving(false);
     }
@@ -259,11 +258,11 @@ export default function OnboardingPage() {
               }`}>
                 {step > s.num ? <CheckCircle className="h-5 w-5" /> : s.num}
               </div>
-              {s.num < 7 && <div className={`w-8 h-0.5 ${step > s.num ? 'bg-green-500' : 'bg-gray-200'}`} />}
+              {s.num < 6 && <div className={`w-12 h-0.5 ${step > s.num ? 'bg-green-500' : 'bg-gray-200'}`} />}
             </div>
           ))}
         </div>
-        <p className="text-sm text-gray-500 text-center">Step {step} of 7: {steps[step - 1].label}</p>
+        <p className="text-sm text-gray-500 text-center">Step {step} of 6: {steps[step - 1].label}</p>
       </div>
 
       <div className="bg-white rounded-lg border border-gray-200 p-6">
@@ -441,7 +440,7 @@ export default function OnboardingPage() {
 
             {/* Completed facilities list */}
             <div className="space-y-2">
-              {completedFacilities.map((f, i) => (
+              {completedFacilities.map((f) => (
                 <div key={f.id} className="flex items-center gap-3 rounded-lg border border-gray-200 p-3">
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50">
                     <Building2 className="h-4 w-4 text-blue-600" />
@@ -463,7 +462,7 @@ export default function OnboardingPage() {
                 <Plus className="h-4 w-4" /> Add Another Facility
               </button>
               <Button className="w-full" onClick={continueToHistory}>
-                Continue to Review <ChevronRight className="h-4 w-4 ml-2" />
+                Continue <ChevronRight className="h-4 w-4 ml-2" />
               </Button>
             </div>
           </div>
@@ -500,7 +499,7 @@ export default function OnboardingPage() {
           </div>
         )}
 
-        {/* Step 6: Results */}
+        {/* Step 6: Review & Complete */}
         {step === 6 && (
           <div className="space-y-6 text-center">
             <div className="flex justify-center">
@@ -509,9 +508,9 @@ export default function OnboardingPage() {
               </div>
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Your Compliance Schedule is Ready</h2>
+              <h2 className="text-2xl font-bold text-gray-900">You&apos;re All Set!</h2>
               <p className="text-gray-500 mt-2">
-                Here&apos;s what TankGuard found across your {completedFacilities.length} {completedFacilities.length === 1 ? 'facility' : 'facilities'}:
+                TankGuard found {complianceCount} compliance items across your {completedFacilities.length} {completedFacilities.length === 1 ? 'facility' : 'facilities'}.
               </p>
             </div>
 
@@ -522,48 +521,19 @@ export default function OnboardingPage() {
               </div>
               <div className={`rounded-lg p-4 ${overdueCount > 0 ? 'bg-red-50' : 'bg-green-50'}`}>
                 <p className={`text-3xl font-bold ${overdueCount > 0 ? 'text-red-700' : 'text-green-700'}`}>{overdueCount}</p>
-                <p className={`text-sm ${overdueCount > 0 ? 'text-red-600' : 'text-green-600'}`}>{overdueCount > 0 ? 'Due Now or Overdue' : 'All Clear'}</p>
+                <p className={`text-sm ${overdueCount > 0 ? 'text-red-600' : 'text-green-600'}`}>{overdueCount > 0 ? 'Need Attention' : 'All Clear'}</p>
               </div>
             </div>
 
             {overdueCount > 0 && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm text-yellow-800">
-                You have {overdueCount} compliance items that may need immediate attention. Subscribe to TankGuard to get full reminders and track all deadlines.
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm text-yellow-800 text-left">
+                You have {overdueCount} compliance items that may need immediate attention. Your dashboard will show exactly what&apos;s due and when.
               </div>
             )}
 
-            <Button className="w-full" onClick={() => setStep(7)}>
-              Subscribe — $99/month <ChevronRight className="h-4 w-4 ml-2" />
+            <Button className="w-full" size="lg" onClick={completeOnboarding} loading={saving}>
+              Go to Dashboard <ChevronRight className="h-4 w-4 ml-2" />
             </Button>
-          </div>
-        )}
-
-        {/* Step 7: Subscribe */}
-        {step === 7 && (
-          <div className="space-y-6 text-center">
-            <h2 className="text-2xl font-bold text-gray-900">Start Your Subscription</h2>
-            <p className="text-gray-500">$99/month &middot; Cancel anytime &middot; No setup fee</p>
-
-            <div className="bg-gray-50 rounded-lg p-6 text-left">
-              <h3 className="font-semibold text-gray-900 mb-3">Everything included:</h3>
-              <ul className="space-y-2 text-sm text-gray-600">
-                {['Unlimited facilities & tanks', 'All 50 states + federal EPA rules', 'Escalating email reminders', 'Document vault with unlimited storage', 'Audit-ready compliance reports', 'Compliance calendar', 'Weekly digest emails'].map(f => (
-                  <li key={f} className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />{f}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-sm text-green-800">
-              <strong>Our Guarantee:</strong> If TankGuard misses a compliance deadline that results in a fine, we refund 12 months of subscription fees.
-            </div>
-
-            <Button className="w-full" onClick={startCheckout} loading={saving}>
-              Subscribe Now — $99/month
-            </Button>
-
-            <p className="text-xs text-gray-400">Secure payment powered by Stripe. You can cancel anytime from your account settings.</p>
           </div>
         )}
       </div>

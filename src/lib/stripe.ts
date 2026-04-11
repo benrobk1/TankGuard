@@ -24,8 +24,8 @@ export async function createCheckoutSession(
     metadata: {
       customerId,
     },
-    success_url: `${appUrl}/dashboard?checkout=success`,
-    cancel_url: `${appUrl}/pricing?checkout=cancelled`,
+    success_url: `${appUrl}/subscribe?checkout=success`,
+    cancel_url: `${appUrl}/subscribe?checkout=cancelled`,
   });
 }
 

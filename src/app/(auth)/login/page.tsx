@@ -29,7 +29,15 @@ export default function LoginPage() {
       if (!res.ok) {
         throw new Error(data.error || 'Invalid email or password');
       }
-      router.push('/dashboard');
+      // Smart redirect based on customer status
+      const customer = data.customer;
+      if (!customer || customer.status === 'PENDING') {
+        router.push('/subscribe');
+      } else if (!customer.onboardingComplete) {
+        router.push('/onboarding');
+      } else {
+        router.push('/dashboard');
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
     } finally {
