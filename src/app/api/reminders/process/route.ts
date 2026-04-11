@@ -1,6 +1,21 @@
 import { NextResponse } from 'next/server';
 import { processReminders, sendWeeklyDigests, retryFailedReminders } from '@/lib/compliance/reminders';
 
+// Vercel Cron Jobs use GET requests
+export async function GET(request: Request) {
+  try {
+    const authHeader = request.headers.get('authorization');
+    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const result = await processReminders();
+    return NextResponse.json({ success: true, ...result });
+  } catch (error) {
+    console.error('Cron process reminders error:', error);
+    return NextResponse.json({ error: 'Failed to process reminders' }, { status: 500 });
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const apiSecret = request.headers.get('x-api-secret');
