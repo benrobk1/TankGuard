@@ -168,7 +168,7 @@ export async function sendWeeklyDigests(): Promise<{ sent: number; failed: numbe
 
   const customers = await prisma.customer.findMany({
     where: {
-      status: { in: ['ACTIVE', 'TRIAL'] },
+      status: 'ACTIVE',
     },
     include: {
       user: true,

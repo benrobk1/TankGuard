@@ -8,6 +8,10 @@ import {
   Zap,
   Shield,
   Check,
+  ShieldCheck,
+  Lock,
+  BadgeCheck,
+  Database,
 } from "lucide-react";
 import { ComplianceCostCalculator } from "@/components/landing/calculator";
 import { EarlyAccessForm } from "@/components/landing/early-access-form";
@@ -146,6 +150,26 @@ export default function Home() {
             </a>
           </div>
 
+          {/* ── Trust Indicators ── */}
+          <div className="mt-12 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-gray-400">
+            <span className="flex items-center gap-1.5">
+              <ShieldCheck className="h-4 w-4 text-green-400" />
+              EPA 40 CFR 280 Aligned
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Lock className="h-4 w-4 text-green-400" />
+              256-bit SSL Encrypted
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Database className="h-4 w-4 text-green-400" />
+              SOC 2 Compliant Hosting
+            </span>
+            <span className="flex items-center gap-1.5">
+              <BadgeCheck className="h-4 w-4 text-green-400" />
+              1,500+ Compliance Rules
+            </span>
+          </div>
+
           <div className="mt-10 flex flex-col items-center">
             <p className="text-sm text-gray-400 mb-2">
               Or sign up for early access updates:
@@ -178,6 +202,35 @@ export default function Home() {
             <div className="bg-gray-50 rounded-xl p-8">
               <p className="text-4xl font-bold text-slate-900">$1M+</p>
               <p className="mt-2 text-gray-500">Average cleanup cost</p>
+            </div>
+          </div>
+
+          {/* ── Regulatory Trust Strip ── */}
+          <div className="mt-16 border-t border-gray-200 pt-10">
+            <p className="text-xs font-medium uppercase tracking-widest text-gray-400 mb-6">
+              Built on Authoritative Regulatory Sources
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-4 text-sm text-gray-500">
+              <span className="flex items-center gap-2">
+                <ShieldCheck className="h-5 w-5 text-blue-600" />
+                <span>EPA 40 CFR Part 280</span>
+              </span>
+              <span className="flex items-center gap-2">
+                <ShieldCheck className="h-5 w-5 text-blue-600" />
+                <span>50-State UST Programs</span>
+              </span>
+              <span className="flex items-center gap-2">
+                <ShieldCheck className="h-5 w-5 text-blue-600" />
+                <span>NFPA 30/30A</span>
+              </span>
+              <span className="flex items-center gap-2">
+                <ShieldCheck className="h-5 w-5 text-blue-600" />
+                <span>EPCRA / CERCLA</span>
+              </span>
+              <span className="flex items-center gap-2">
+                <ShieldCheck className="h-5 w-5 text-blue-600" />
+                <span>PEI RP100/RP1200</span>
+              </span>
             </div>
           </div>
         </div>
@@ -305,6 +358,26 @@ export default function Home() {
                   TankGuard misses a compliance deadline that results in a fine,
                   we refund 12 months of subscription fees.
                 </p>
+              </div>
+
+              {/* ── Pricing Trust Badges ── */}
+              <div className="mt-6 grid grid-cols-2 gap-3">
+                <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <Lock className="h-3.5 w-3.5 text-gray-400" />
+                  <span>Secure Stripe Billing</span>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <ShieldCheck className="h-3.5 w-3.5 text-gray-400" />
+                  <span>Cancel Anytime</span>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <BadgeCheck className="h-3.5 w-3.5 text-gray-400" />
+                  <span>No Setup Fees</span>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <Database className="h-3.5 w-3.5 text-gray-400" />
+                  <span>Your Data, Encrypted</span>
+                </div>
               </div>
             </div>
           </div>

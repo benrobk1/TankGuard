@@ -17,8 +17,8 @@ const faqs = [
     a: "We cover all 50 states. Each state has its own UST program with specific requirements beyond federal EPA rules. TankGuard maintains a database of state-specific regulations and automatically applies them based on your facility locations.",
   },
   {
-    q: "Can I try before I pay?",
-    a: "Yes! Our free onboarding process lets you add your facilities and tanks, and TankGuard generates your complete compliance schedule before you ever enter payment information. You can see exactly what you're getting before you commit.",
+    q: "How does billing work?",
+    a: "TankGuard is $99/month, billed through Stripe. You create your account, subscribe, and then set up your facilities and tanks. There is no free trial — you get full access to all features from day one of your subscription.",
   },
   {
     q: "What happens if regulations change?",

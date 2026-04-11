@@ -62,7 +62,7 @@ interface SessionData {
   customer: {
     id: string;
     companyName: string;
-    subscriptionStatus: string;
+    status: string;
     onboardingComplete: boolean;
   } | null;
 }
