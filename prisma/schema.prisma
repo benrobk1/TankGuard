@@ -12,16 +12,20 @@ datasource db {
 // ============================================
 
 model User {
-  id             String    @id @default(cuid())
-  email          String    @unique
-  passwordHash   String    @map("password_hash")
-  name           String?
-  emailVerified  DateTime? @map("email_verified")
-  createdAt      DateTime  @default(now()) @map("created_at")
-  updatedAt      DateTime  @updatedAt @map("updated_at")
+  id                  String    @id @default(cuid())
+  email               String    @unique
+  passwordHash        String    @map("password_hash")
+  name                String?
+  emailVerified       DateTime? @map("email_verified")
+  failedLoginAttempts Int       @default(0) @map("failed_login_attempts")
+  lockedUntil         DateTime? @map("locked_until")
+  lastLoginAt         DateTime? @map("last_login_at")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
 
-  customer   Customer?
-  sessions   Session[]
+  customer            Customer?
+  sessions            Session[]
+  passwordResetTokens PasswordResetToken[]
 
   @@map("users")
 }
@@ -35,6 +39,20 @@ model Session {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("sessions")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique @map("token_hash")
+  userId    String   @map("user_id")
+  expires   DateTime
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("password_reset_tokens")
 }
 
 // ============================================

@@ -9,6 +9,28 @@ interface UseFetchResult<T> {
   mutate: () => void;
 }
 
+// Endpoints where a 401 is expected (e.g. checking if user is logged in)
+const AUTH_CHECK_ENDPOINTS = ['/api/auth/session'];
+
+function handleUnauthorized(url: string) {
+  if (typeof window === 'undefined') return;
+  if (AUTH_CHECK_ENDPOINTS.some((ep) => url.startsWith(ep))) return;
+
+  // Avoid redirect loops when already on an auth page
+  const path = window.location.pathname;
+  if (
+    path === '/login' ||
+    path === '/register' ||
+    path === '/forgot-password' ||
+    path === '/reset-password'
+  ) {
+    return;
+  }
+
+  const redirect = encodeURIComponent(path + window.location.search);
+  window.location.href = `/login?redirect=${redirect}`;
+}
+
 export function useFetch<T = unknown>(url: string | null): UseFetchResult<T> {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
@@ -26,6 +48,9 @@ export function useFetch<T = unknown>(url: string | null): UseFetchResult<T> {
     setError(null);
     try {
       const res = await fetch(url);
+      if (res.status === 401) {
+        handleUnauthorized(url);
+      }
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
         throw new Error(body.error || `Request failed (${res.status})`);

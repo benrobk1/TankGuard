@@ -23,6 +23,28 @@ export async function sendEmail(to: string, subject: string, html: string) {
   });
 }
 
+export async function sendPasswordResetEmail(email: string, resetUrl: string) {
+  const subject = 'Reset your TankGuard password';
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <h1 style="color: #1a56db;">Reset your password</h1>
+      <p>We received a request to reset the password for your TankGuard account.</p>
+      <p>Click the button below to choose a new password. This link will expire in <strong>1 hour</strong>.</p>
+      <p style="margin: 24px 0;">
+        <a href="${resetUrl}" style="display:inline-block;background:#2563eb;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600;">
+          Reset password
+        </a>
+      </p>
+      <p style="color:#6b7280;font-size:13px;">Or copy and paste this link into your browser:<br/><span style="word-break:break-all;">${resetUrl}</span></p>
+      <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;" />
+      <p style="color:#6b7280;font-size:13px;">If you didn't request a password reset, you can safely ignore this email — your password will remain unchanged.</p>
+      <p>— The TankGuard Team</p>
+    </div>
+  `;
+
+  return sendEmail(email, subject, html);
+}
+
 export async function sendWelcomeEmail(email: string, name: string) {
   const subject = 'Welcome to TankGuard!';
   const html = `

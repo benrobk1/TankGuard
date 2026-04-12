@@ -3,6 +3,9 @@ import { prisma } from '@/lib/prisma';
 import { verifyPassword, createSession } from '@/lib/auth';
 import { loginSchema } from '@/lib/validations';
 
+const MAX_FAILED_ATTEMPTS = 5;
+const LOCKOUT_MINUTES = 15;
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -22,20 +25,65 @@ export async function POST(request: Request) {
       include: { customer: true },
     });
 
-    if (!user) {
+    // Generic error to prevent account enumeration
+    const genericInvalid = NextResponse.json(
+      { error: 'Invalid email or password' },
+      { status: 401 },
+    );
+
+    if (!user) return genericInvalid;
+
+    // Check if account is currently locked
+    if (user.lockedUntil && user.lockedUntil > new Date()) {
+      const minutesRemaining = Math.ceil(
+        (user.lockedUntil.getTime() - Date.now()) / 60000,
+      );
       return NextResponse.json(
-        { error: 'Invalid email or password' },
-        { status: 401 },
+        {
+          error: `Account temporarily locked due to too many failed login attempts. Try again in ${minutesRemaining} minute${minutesRemaining === 1 ? '' : 's'} or reset your password.`,
+        },
+        { status: 423 },
       );
     }
 
     const valid = await verifyPassword(password, user.passwordHash);
+
     if (!valid) {
-      return NextResponse.json(
-        { error: 'Invalid email or password' },
-        { status: 401 },
-      );
+      const newAttempts = user.failedLoginAttempts + 1;
+      const shouldLock = newAttempts >= MAX_FAILED_ATTEMPTS;
+      const lockedUntil = shouldLock
+        ? new Date(Date.now() + LOCKOUT_MINUTES * 60 * 1000)
+        : null;
+
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          failedLoginAttempts: shouldLock ? 0 : newAttempts,
+          lockedUntil,
+        },
+      });
+
+      if (shouldLock) {
+        return NextResponse.json(
+          {
+            error: `Too many failed login attempts. Your account has been locked for ${LOCKOUT_MINUTES} minutes. You can reset your password to regain access immediately.`,
+          },
+          { status: 423 },
+        );
+      }
+
+      return genericInvalid;
     }
+
+    // Successful login — reset counters and stamp last login
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        failedLoginAttempts: 0,
+        lockedUntil: null,
+        lastLoginAt: new Date(),
+      },
+    });
 
     await createSession(user.id);
 
