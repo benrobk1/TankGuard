@@ -1,7 +1,9 @@
 import { PrismaClient } from '../src/generated/prisma';
+import { PrismaPg } from '@prisma/adapter-pg';
 import { federalRules } from '../src/lib/compliance/federal-rules';
 
-const prisma = new PrismaClient();
+const adapter = new PrismaPg(process.env.DATABASE_URL!);
+const prisma = new PrismaClient({ adapter });
 
 const statesData: Array<{
   name: string;

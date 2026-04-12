@@ -15,6 +15,7 @@ export async function createCheckoutSession(
   return stripe.checkout.sessions.create({
     customer_email: customerEmail,
     mode: 'subscription',
+    allow_promotion_codes: true,
     line_items: [
       {
         price: PRICE_ID,
