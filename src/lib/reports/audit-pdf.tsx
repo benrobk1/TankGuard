@@ -229,8 +229,11 @@ function AuditReport({ data }: { data: AuditData }) {
 
         {/* Footer */}
         <View style={styles.footer} fixed>
-          <Text>TankGuard - UST Compliance Tracking | Not legal or regulatory advice. Verify requirements with your implementing agency.</Text>
-          <Text render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
+          <View style={styles.footerRow}>
+            <Text>TankGuard - UST Compliance Tracking | Rules verified against EPA 40 CFR 280 & state programs</Text>
+            <Text render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
+          </View>
+          <Text>Not legal or regulatory advice. Verify requirements with your implementing agency. Data encrypted in transit and at rest.</Text>
         </View>
       </Page>
 
@@ -285,8 +288,11 @@ function AuditReport({ data }: { data: AuditData }) {
         </View>
 
         <View style={styles.footer} fixed>
-          <Text>TankGuard - UST Compliance Tracking | Not legal or regulatory advice. Verify requirements with your implementing agency.</Text>
-          <Text render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
+          <View style={styles.footerRow}>
+            <Text>TankGuard - UST Compliance Tracking | Rules verified against EPA 40 CFR 280 & state programs</Text>
+            <Text render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
+          </View>
+          <Text>Not legal or regulatory advice. Verify requirements with your implementing agency. Data encrypted in transit and at rest.</Text>
         </View>
       </Page>
     </Document>

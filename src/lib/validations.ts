@@ -21,6 +21,15 @@ export const loginSchema = z.object({
   password: z.string().min(1),
 });
 
+export const forgotPasswordSchema = z.object({
+  email: emailSchema,
+});
+
+export const resetPasswordSchema = z.object({
+  token: z.string().min(1, 'Token is required'),
+  password: passwordSchema,
+});
+
 // Field allowlists for PUT operations
 export const tankUpdateFields = [
   'tankNumber', 'capacity', 'material', 'product', 'installationDate',

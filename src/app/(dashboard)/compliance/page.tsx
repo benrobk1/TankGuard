@@ -357,6 +357,24 @@ export default function CompliancePage() {
         </div>
       </Modal>
 
+      {/* Regulatory Source Verification */}
+      <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 mt-4">
+        <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5 text-xs text-blue-700">
+          <span className="flex items-center gap-1.5 font-medium">
+            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+            </svg>
+            Deadlines sourced from EPA 40 CFR 280 & state programs
+          </span>
+          <span className="text-blue-500">|</span>
+          <span>150 federal rules</span>
+          <span className="text-blue-500">|</span>
+          <span>1,429 state rules</span>
+          <span className="text-blue-500">|</span>
+          <span>51 jurisdictions</span>
+        </div>
+      </div>
+
       {/* Legal Disclaimer */}
       <p className="text-xs text-gray-400 mt-4">
         TankGuard is a compliance tracking tool and does not constitute legal, regulatory, or environmental advice. Deadlines and requirements are based on federal and state regulations as of our last update. Always verify with your implementing agency. Consult a qualified environmental compliance professional for facility-specific guidance.

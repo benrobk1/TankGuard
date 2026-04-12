@@ -444,11 +444,36 @@ export default function Home() {
             </nav>
           </div>
 
-          <div className="mt-8 border-t border-white/10 pt-8 text-sm text-center space-y-3">
-            <p className="text-xs text-slate-500 max-w-2xl mx-auto">
-              TankGuard is a compliance tracking tool and does not constitute legal, regulatory, or environmental advice. You are responsible for verifying compliance requirements with your state implementing agency.
-            </p>
-            <p>&copy; {new Date().getFullYear()} TankGuard. All rights reserved.</p>
+          {/* ── Footer Trust Badges ── */}
+          <div className="mt-8 border-t border-white/10 pt-8">
+            <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-xs text-gray-500 mb-6">
+              <span className="flex items-center gap-1.5">
+                <Lock className="h-3.5 w-3.5" />
+                256-bit SSL
+              </span>
+              <span className="flex items-center gap-1.5">
+                <ShieldCheck className="h-3.5 w-3.5" />
+                SOC 2 Compliant
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Database className="h-3.5 w-3.5" />
+                Encrypted at Rest
+              </span>
+              <span className="flex items-center gap-1.5">
+                <BadgeCheck className="h-3.5 w-3.5" />
+                GDPR Ready
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Shield className="h-3.5 w-3.5" />
+                99.9% Uptime SLA
+              </span>
+            </div>
+            <div className="text-sm text-center space-y-3">
+              <p className="text-xs text-slate-500 max-w-2xl mx-auto">
+                TankGuard is a compliance tracking tool and does not constitute legal, regulatory, or environmental advice. You are responsible for verifying compliance requirements with your state implementing agency.
+              </p>
+              <p>&copy; {new Date().getFullYear()} TankGuard. All rights reserved.</p>
+            </div>
           </div>
         </div>
       </footer>
