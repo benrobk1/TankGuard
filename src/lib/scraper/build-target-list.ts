@@ -18,25 +18,38 @@ import { flDepScraper } from './states/fl-dep';
 import { txTceqScraper } from './states/tx-tceq';
 import { nyDecScraper } from './states/ny-dec';
 import { paDepScraper } from './states/pa-dep';
+import { gaEpdScraper } from './states/ga-epd';
+import { inIdemScraper } from './states/in-idem';
+import { vaDeqScraper } from './states/va-deq';
 import { normalize } from './normalize';
 import { aggregateOperators } from './aggregate';
 import { enrichOperators, type EnrichOptions } from './enrich';
-import type {
-  NormalizedFacility,
-  OperatorAggregate,
-  RawFacilityRecord,
-  ScraperRunOptions,
-  StateCode,
-  StateScraper,
-  TargetAccount,
+import {
+  STATE_TIER,
+  STATE_TIER_BONUS,
+  type NormalizedFacility,
+  type OperatorAggregate,
+  type RawFacilityRecord,
+  type ScraperRunOptions,
+  type StateCode,
+  type StateScraper,
+  type TargetAccount,
 } from './types';
 
 export const TARGET_COUNT = 2000;
 
+/**
+ * Scraper roster ordered by GTM tier (Tier 1 first). Run order doesn't
+ * affect output — the pipeline fans out in parallel — but having Tier 1
+ * sources at the top makes per-state failures easier to spot in logs.
+ */
 const SCRAPERS: StateScraper[] = [
-  caGeoTrackerScraper,
   flDepScraper,
   txTceqScraper,
+  gaEpdScraper,
+  inIdemScraper,
+  vaDeqScraper,
+  caGeoTrackerScraper,
   nyDecScraper,
   paDepScraper,
 ];
@@ -74,7 +87,9 @@ export async function buildTargetList(
   const onProgress = options.onProgress ?? (() => {});
   const targetCount = options.targetCount ?? TARGET_COUNT;
 
-  const perState: Record<StateCode, number> = { CA: 0, FL: 0, TX: 0, NY: 0, PA: 0 };
+  const perState: Record<StateCode, number> = {
+    CA: 0, FL: 0, TX: 0, NY: 0, PA: 0, GA: 0, IN: 0, VA: 0,
+  };
   const allRaw: RawFacilityRecord[] = [];
 
   const scraperResults = await Promise.allSettled(
@@ -141,7 +156,24 @@ function score(op: OperatorAggregate): number {
   const emailPts = op.primaryEmail ? 15 : 0;
   const tankBonus = Math.min(op.estimatedTankCount, 60) * (5 / 60);
 
-  return Math.round(sitesPts + multiState + phonePts + emailPts + tankBonus);
+  // GTM tier bonus: operators concentrated in Tier 1 launch states (FL/TX/
+  // GA/IN/VA) sit higher in the list than equivalent operators in Tier 2/3
+  // states. We use the *best* tier across the operator's footprint so a
+  // 6-site operator with 5 stores in CA + 1 in FL still gets the FL bonus.
+  const bestTier = Math.min(...op.states.map((s) => STATE_TIER[s])) as 1 | 2 | 3;
+  const tierBonus = STATE_TIER_BONUS[bestTier];
+
+  // Red-tag / Delivery Prohibition signal — operators with at least one
+  // facility currently barred from receiving fuel are the highest-intent
+  // prospects in the dataset. Worth more than any single contact field.
+  const redTagged = op.facilities.some((f) =>
+    /red.?tagged|delivery prohibit|prohibited/i.test(f.complianceStatus ?? ''),
+  );
+  const redTagBonus = redTagged ? 25 : 0;
+
+  return Math.round(
+    sitesPts + multiState + phonePts + emailPts + tankBonus + tierBonus + redTagBonus,
+  );
 }
 
 function rankAndCap(

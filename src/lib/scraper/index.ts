@@ -13,18 +13,29 @@ import { flDepScraper } from './states/fl-dep';
 import { txTceqScraper } from './states/tx-tceq';
 import { nyDecScraper } from './states/ny-dec';
 import { paDepScraper } from './states/pa-dep';
+import { gaEpdScraper } from './states/ga-epd';
+import { inIdemScraper } from './states/in-idem';
+import { vaDeqScraper } from './states/va-deq';
 import type { StateScraper } from './types';
 
 export type { RawFacilityRecord, OperatorAggregate, TargetAccount } from './types';
 export { buildTargetList, targetsToCsv, TARGET_COUNT } from './build-target-list';
 
-/** State scrapers with a real fetch implementation (the 5 brief targets). */
+/**
+ * State scrapers with a real fetch implementation. The original brief
+ * named CA/FL/TX/NY/PA; the GTM prioritization pass added the Tier 1
+ * states GA/IN/VA, since their data is scrapeable and the brief's 2,000-
+ * account target needs the broader population to fill cleanly.
+ */
 export const liveStateScrapers: Partial<Record<string, StateScraper>> = {
   CA: caGeoTrackerScraper,
   FL: flDepScraper,
   TX: txTceqScraper,
   NY: nyDecScraper,
   PA: paDepScraper,
+  GA: gaEpdScraper,
+  IN: inIdemScraper,
+  VA: vaDeqScraper,
 };
 
 export interface ScrapedFacility {

@@ -9,7 +9,37 @@
  *   PA - Department of Environmental Protection, Underground Storage Tank Indemnification Fund (USTIF) / eFACTS
  */
 
-export type StateCode = 'CA' | 'FL' | 'TX' | 'NY' | 'PA';
+export type StateCode = 'CA' | 'FL' | 'TX' | 'NY' | 'PA' | 'GA' | 'IN' | 'VA';
+
+/**
+ * Go-to-market tiering used to bias the target-list ranker toward states
+ * where scrapeable data, regulatory pain, and ICP density combine to make
+ * cold outreach most efficient. Mirrors the prioritization brief:
+ *   Tier 1 — launch states (FL, TX, GA, IN, VA)
+ *   Tier 2 — secondary, targeted campaigns (CA single-wall list, NJ WoM)
+ *   Tier 3 — fill-in markets after Tier 1/2 are saturated
+ *
+ * Weights are added to the operator score in build-target-list.ts so a
+ * 3-site Florida operator outranks a 3-site California operator when other
+ * signals are equal. The 2,000-row cap is unchanged; tiering only affects
+ * which operators land above the cut line when the long tail is competitive.
+ */
+export const STATE_TIER: Record<StateCode, 1 | 2 | 3> = {
+  FL: 1,
+  TX: 1,
+  GA: 1,
+  IN: 1,
+  VA: 1,
+  CA: 2,
+  NY: 3,
+  PA: 3,
+};
+
+export const STATE_TIER_BONUS: Record<1 | 2 | 3, number> = {
+  1: 20,
+  2: 5,
+  3: 0,
+};
 
 export interface RawFacilityRecord {
   /** Source-provided facility/site identifier (registration number, facility ID, etc.). */
