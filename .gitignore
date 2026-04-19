@@ -36,3 +36,4 @@ scrapers/sources/__pycache__/
 scrapers/output/*.csv
 scrapers/output/*.json
 scrapers/.venv/
+tsconfig.tsbuildinfo
