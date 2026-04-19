@@ -31,3 +31,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 env_config.txt
+scrapers/__pycache__/
+scrapers/sources/__pycache__/
+scrapers/output/*.csv
+scrapers/output/*.json
+scrapers/.venv/
