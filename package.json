@@ -15,9 +15,11 @@
     "db:deploy": "prisma migrate deploy",
     "db:reset": "prisma migrate reset --force",
     "postinstall": "prisma generate",
-    "scraper:build-target-list": "npx tsx scripts/build-target-list.ts"
+    "scraper:build-target-list": "npx tsx scripts/build-target-list.ts",
+    "seo:generate": "npx tsx scripts/generate-seo-article.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.88.0",
     "@auth/prisma-adapter": "^2.11.1",
     "@hookform/resolvers": "^5.2.2",
     "@prisma/adapter-pg": "^7.7.0",
