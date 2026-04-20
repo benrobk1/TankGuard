@@ -31,7 +31,7 @@ export default function TermsPage() {
       <div className="max-w-3xl mx-auto px-4 py-16">
         <Link href="/" className="text-blue-600 hover:text-blue-700 text-sm mb-8 inline-block">&larr; Back to Home</Link>
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Terms of Service</h1>
-        <p className="text-sm text-gray-500 mb-2">Last updated: April 19, 2026</p>
+        <p className="text-sm text-gray-500 mb-2">Last updated: April 20, 2026</p>
         <p className="text-xs uppercase tracking-wide text-amber-700 bg-amber-50 border border-amber-200 rounded px-3 py-2 mb-10">
           Draft pending legal review. Contact support@tankguard.com for the currently-effective version.
         </p>
@@ -61,7 +61,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-semibold text-gray-900 mb-3">4. Pricing &amp; Payment</h2>
             <p className="text-gray-600 leading-relaxed">
-              TankGuard is offered in three tiers: Starter ($99 per month, single site), Growth ($499 per month, up to 10 sites with priority email support), and Scale ($1,499 per month, up to 50 sites with priority support and dedicated onboarding). Payment is processed through Stripe and subscriptions renew automatically at the end of each billing period until cancelled. You may cancel at any time through your account settings or the Stripe customer portal. Except as expressly provided in Section 5 (Service Credit Guarantee), fees are non-refundable, including for partial billing periods, unused features, or downgrades.
+              TankGuard is offered in three tiers: <strong>Essentials</strong> ($99 per month, single facility), <strong>Pro</strong> ($499 per month, up to 10 facilities with multi-site dashboard, bulk document upload, and priority email support), and <strong>Enterprise</strong> ($1,499 per month, up to 50 facilities with dedicated onboarding, quarterly compliance review calls, and SSO). A legacy single-plan price remains available only to grandfathered customers re-subscribing after a lapse via a signed support link; it is not offered for new subscriptions. Payment is processed through Stripe and subscriptions renew automatically at the end of each billing period until cancelled. You may cancel at any time through your account settings or the Stripe customer portal. Except as expressly provided in Section 5 (Service Credit Guarantee), fees are non-refundable, including for partial billing periods, unused features, or downgrades.
             </p>
           </section>
 
