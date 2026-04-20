@@ -26,12 +26,17 @@ export const stripe = new Proxy({} as Stripe, {
 });
 
 /**
- * Pricing tiers introduced by the Saastudio pricing rebuild. Keys map 1:1
- * to Stripe Price IDs set in env (STRIPE_PRICE_ID_TIER_STARTER,
- * STRIPE_PRICE_ID_TIER_GROWTH, STRIPE_PRICE_ID_TIER_SCALE). The legacy
- * STRIPE_PRICE_ID is kept for grandfathered single-plan subscribers —
- * the checkout API won't select it for new subs, but existing Stripe
- * subscriptions keep billing against it until the customer upgrades.
+ * Pricing tiers introduced by the Saastudio pricing rebuild. Tier slugs
+ * (starter / growth / scale) are stable internal identifiers; user-facing
+ * display names (Essentials / Pro / Enterprise) match the live Stripe
+ * product names. Slugs map 1:1 to env-var price IDs:
+ *   STRIPE_PRICE_ID_TIER_STARTER -> price_1TO2cbCBEqeOZm5BVME6l8g9 (Essentials, $99/mo)
+ *   STRIPE_PRICE_ID_TIER_GROWTH  -> price_1TO2ccCBEqeOZm5Bqt6xlXI2 (Pro,        $499/mo)
+ *   STRIPE_PRICE_ID_TIER_SCALE   -> price_1TO2ccCBEqeOZm5BkQBY8EUl (Enterprise, $1,499/mo)
+ *
+ * Legacy STRIPE_PRICE_ID is now archived in Stripe but kept for
+ * grandfathered single-plan subscribers — checkout will not select it for
+ * new subs.
  */
 export type PricingTier = 'starter' | 'growth' | 'scale';
 
@@ -47,7 +52,7 @@ export interface TierDefinition {
 export const TIERS: Record<PricingTier, TierDefinition> = {
   starter: {
     id: 'starter',
-    displayName: 'Starter',
+    displayName: 'Essentials',
     monthlyPriceUSD: 99,
     maxSites: 1,
     supportLevel: 'Email support',
@@ -61,13 +66,13 @@ export const TIERS: Record<PricingTier, TierDefinition> = {
   },
   growth: {
     id: 'growth',
-    displayName: 'Growth',
+    displayName: 'Pro',
     monthlyPriceUSD: 499,
     maxSites: 10,
     supportLevel: 'Priority email support',
     highlights: [
       'Up to 10 facilities',
-      'Everything in Starter',
+      'Everything in Essentials',
       'Priority email support',
       'Multi-site compliance dashboard',
       'Bulk document upload',
@@ -75,13 +80,13 @@ export const TIERS: Record<PricingTier, TierDefinition> = {
   },
   scale: {
     id: 'scale',
-    displayName: 'Scale',
+    displayName: 'Enterprise',
     monthlyPriceUSD: 1499,
     maxSites: 50,
     supportLevel: 'Priority support + dedicated onboarding',
     highlights: [
       'Up to 50 facilities',
-      'Everything in Growth',
+      'Everything in Pro',
       'Dedicated onboarding specialist',
       'Quarterly compliance review calls',
       'SSO + custom user roles',
@@ -111,9 +116,9 @@ export function getTierPriceId(tier: PricingTier): string {
 }
 
 /**
- * Legacy single-plan price ID. Still honored on the webhook side so
- * grandfathered subscribers continue to bill correctly, but the checkout
- * flow will not select it for new customers.
+ * Legacy single-plan price ID. Now archived in Stripe but still honored on
+ * the webhook side so grandfathered subscribers continue to bill correctly.
+ * The checkout flow will not select it for new customers.
  */
 export function getLegacyPriceId(): string | null {
   return process.env.STRIPE_PRICE_ID ?? null;
