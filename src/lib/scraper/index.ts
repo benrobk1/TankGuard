@@ -8,6 +8,35 @@
  */
 
 import prisma from '@/lib/prisma';
+import { caGeoTrackerScraper } from './states/ca-geotracker';
+import { flDepScraper } from './states/fl-dep';
+import { txTceqScraper } from './states/tx-tceq';
+import { nyDecScraper } from './states/ny-dec';
+import { paDepScraper } from './states/pa-dep';
+import { gaEpdScraper } from './states/ga-epd';
+import { inIdemScraper } from './states/in-idem';
+import { vaDeqScraper } from './states/va-deq';
+import type { StateScraper } from './types';
+
+export type { RawFacilityRecord, OperatorAggregate, TargetAccount } from './types';
+export { buildTargetList, targetsToCsv, TARGET_COUNT } from './build-target-list';
+
+/**
+ * State scrapers with a real fetch implementation. The original brief
+ * named CA/FL/TX/NY/PA; the GTM prioritization pass added the Tier 1
+ * states GA/IN/VA, since their data is scrapeable and the brief's 2,000-
+ * account target needs the broader population to fill cleanly.
+ */
+export const liveStateScrapers: Partial<Record<string, StateScraper>> = {
+  CA: caGeoTrackerScraper,
+  FL: flDepScraper,
+  TX: txTceqScraper,
+  NY: nyDecScraper,
+  PA: paDepScraper,
+  GA: gaEpdScraper,
+  IN: inIdemScraper,
+  VA: vaDeqScraper,
+};
 
 export interface ScrapedFacility {
   facilityName: string;
@@ -139,11 +168,30 @@ export async function scrapeFacilities(
     throw new Error(`No scraper configured for state: ${stateAbbr}`);
   }
 
-  // Placeholder - in production, this would dispatch to state-specific scrapers
+  // CA/FL/TX/NY/PA have real implementations under ./states/.
+  const live = liveStateScrapers[stateAbbr];
+  if (live) {
+    const rows = await live.fetchFacilities({ limit: options?.limit });
+    return rows.map((r) => ({
+      facilityName: r.facilityName,
+      ownerName: r.ownerName,
+      address: r.address,
+      city: r.city,
+      zip: r.zip,
+      phone: r.phone,
+      email: r.email,
+      tankCount: r.tankCount,
+      tankTypes: r.productsStored,
+      productsStored: r.productsStored,
+      installationDates: r.installationDates,
+      registrationNumber: r.sourceFacilityId,
+      complianceStatus: r.complianceStatus ?? r.facilityStatus,
+      sourceUrl: r.sourceUrl,
+    }));
+  }
+
   console.log(`Scraping ${config.name} (${stateAbbr}) from ${config.databaseUrl}`);
   console.log(`Format: ${config.format}, Notes: ${config.notes}`);
-
-  // Return empty array - actual implementation would scrape the database
   return [];
 }
 

@@ -75,7 +75,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           <h3 className="text-lg font-bold text-gray-900">Never miss a compliance deadline</h3>
           <p className="text-gray-600 mt-1 text-sm">TankGuard tracks every EPA and state requirement for your underground storage tanks.</p>
           <Link href="/register" className="inline-block mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors">
-            Get Started — $99/month
+            Get Started — Plans from $99/mo
           </Link>
         </div>
       </main>

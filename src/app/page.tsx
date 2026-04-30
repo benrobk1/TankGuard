@@ -16,6 +16,7 @@ import {
 import { ComplianceCostCalculator } from "@/components/landing/calculator";
 import { EarlyAccessForm } from "@/components/landing/early-access-form";
 import { FAQ } from "@/components/landing/faq";
+import { TIERS, TIER_ORDER } from "@/lib/stripe";
 
 const features = [
   {
@@ -83,16 +84,6 @@ const steps = [
   },
 ];
 
-const pricingFeatures = [
-  "Unlimited facilities",
-  "Unlimited tanks",
-  "All 50 states",
-  "Email reminders",
-  "Document storage",
-  "Audit reports",
-  "Compliance calendar",
-];
-
 export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
@@ -130,8 +121,9 @@ export default function Home() {
           </h1>
           <p className="mt-6 text-lg sm:text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
             TankGuard tracks every EPA and state compliance deadline for your
-            underground storage tanks.{" "}
-            <span className="text-white font-semibold">$99/month.</span>{" "}
+            underground storage tanks. Plans from{" "}
+            <span className="text-white font-semibold">$99/mo for a single site</span>{" "}
+            to <span className="text-white font-semibold">$1,499/mo for up to 50 sites</span>.
             Replaces your $3,000/year consultant.
           </p>
 
@@ -315,70 +307,142 @@ export default function Home() {
               Simple, transparent pricing
             </h2>
             <p className="mt-4 text-lg text-gray-500">
-              One plan. Everything included. No surprises.
+              Three tiers sized for the way UST operators actually scale.
             </p>
           </div>
 
-          <div className="max-w-md mx-auto rounded-2xl border-2 border-blue-600 bg-white shadow-xl overflow-hidden">
-            <div className="bg-blue-600 px-8 py-8 text-center text-white">
-              <p className="text-sm font-medium uppercase tracking-wide opacity-80">
-                All-Inclusive
-              </p>
-              <p className="mt-2">
-                <span className="text-5xl font-bold">$99</span>
-                <span className="text-lg opacity-80">/month</span>
-              </p>
-              <p className="mt-2 text-sm opacity-80">
-                No setup fee. Cancel anytime.
-              </p>
+          <div className="grid gap-8 md:grid-cols-3 max-w-6xl mx-auto">
+            {TIER_ORDER.map((tierKey) => {
+              const tier = TIERS[tierKey];
+              const isRecommended = tier.id === "growth";
+              return (
+                <div
+                  key={tier.id}
+                  className={`relative rounded-2xl border-2 bg-white overflow-hidden flex flex-col ${
+                    isRecommended
+                      ? "border-blue-600 shadow-xl"
+                      : "border-gray-200 shadow-sm"
+                  }`}
+                >
+                  {isRecommended && (
+                    <div className="absolute top-4 right-4 text-xs font-semibold uppercase tracking-wide rounded-full bg-blue-600 px-3 py-1 text-white">
+                      Most Popular
+                    </div>
+                  )}
+                  <div className={`px-6 py-6 ${isRecommended ? "bg-blue-600 text-white" : "bg-gray-50 text-gray-900"}`}>
+                    <p className="text-sm font-medium uppercase tracking-wide opacity-80">
+                      {tier.displayName}
+                    </p>
+                    <p className="mt-2">
+                      <span className="text-4xl font-bold">
+                        ${tier.monthlyPriceUSD.toLocaleString()}
+                      </span>
+                      <span className="text-base opacity-80">/month</span>
+                    </p>
+                    <p className="mt-1 text-sm opacity-80">
+                      Up to {tier.maxSites} {tier.maxSites === 1 ? "site" : "sites"} &middot; {tier.supportLevel}
+                    </p>
+                  </div>
+
+                  <div className="px-6 py-6 flex-1 flex flex-col">
+                    <ul className="space-y-3 flex-1">
+                      {tier.highlights.map((feature) => (
+                        <li key={feature} className="flex items-start gap-2.5">
+                          <Check className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                          <span className="text-gray-700 text-sm">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <div className="mt-6">
+                      <Link
+                        href="/register"
+                        className={`block w-full rounded-lg px-6 py-3 text-center text-base font-semibold transition-colors ${
+                          isRecommended
+                            ? "bg-blue-600 text-white hover:bg-blue-500"
+                            : "bg-gray-900 text-white hover:bg-gray-800"
+                        }`}
+                      >
+                        Get Started
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <p className="mt-10 text-sm text-gray-500 text-center max-w-3xl mx-auto">
+            <sup>*</sup> If TankGuard fails to surface a properly-configured compliance deadline at least 30 days in advance, we&rsquo;ll credit up to three months of subscription fees as product credit. Not conditioned on any regulatory or enforcement outcome. Full carve-outs in the{" "}
+            <Link href="/terms" className="underline hover:text-gray-700">
+              Terms of Service
+            </Link>
+            .
+          </p>
+
+          {/* ── Pricing Trust Badges ── */}
+          <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
+            <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
+              <Lock className="h-3.5 w-3.5 text-gray-400" />
+              <span>Secure Stripe Billing</span>
+            </div>
+            <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
+              <ShieldCheck className="h-3.5 w-3.5 text-gray-400" />
+              <span>Cancel Anytime</span>
+            </div>
+            <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
+              <BadgeCheck className="h-3.5 w-3.5 text-gray-400" />
+              <span>No Setup Fees</span>
+            </div>
+            <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
+              <Database className="h-3.5 w-3.5 text-gray-400" />
+              <span>Encrypted at Rest</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Founder ── */}
+      <section className="bg-white py-16 sm:py-24 border-t border-gray-100">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-[200px_1fr] gap-8 items-start">
+            <div className="flex flex-col items-center md:items-start">
+              <div className="h-40 w-40 rounded-full bg-gradient-to-br from-blue-100 to-slate-200 flex items-center justify-center text-4xl font-bold text-slate-700">
+                BK
+              </div>
+              <div className="mt-4 text-center md:text-left">
+                <p className="font-semibold text-gray-900">Ben Kurz</p>
+                <p className="text-sm text-gray-500">Founder, Saastudio LLC</p>
+                <a
+                  href="https://www.linkedin.com/in/ben-kurz"
+                  className="mt-2 inline-block text-sm text-blue-600 hover:text-blue-700"
+                  rel="nofollow noopener noreferrer"
+                  target="_blank"
+                >
+                  LinkedIn &rarr;
+                </a>
+              </div>
             </div>
 
-            <div className="px-8 py-8">
-              <ul className="space-y-3">
-                {pricingFeatures.map((feature) => (
-                  <li key={feature} className="flex items-center gap-3">
-                    <Check className="h-5 w-5 text-green-500 shrink-0" />
-                    <span className="text-gray-700">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <div className="mt-8">
-                <Link
-                  href="/register"
-                  className="block w-full rounded-lg bg-blue-600 px-6 py-3 text-center text-base font-semibold text-white hover:bg-blue-500 transition-colors"
-                >
-                  Get Started
-                </Link>
-              </div>
-
-              <div className="mt-6 rounded-lg bg-green-50 border border-green-200 p-4">
-                <p className="text-sm text-green-800 leading-relaxed">
-                  <span className="font-semibold">Guaranteed:</span> If
-                  TankGuard misses a compliance deadline that results in a fine,
-                  we refund 12 months of subscription fees.
-                </p>
-              </div>
-
-              {/* ── Pricing Trust Badges ── */}
-              <div className="mt-6 grid grid-cols-2 gap-3">
-                <div className="flex items-center gap-2 text-xs text-gray-500">
-                  <Lock className="h-3.5 w-3.5 text-gray-400" />
-                  <span>Secure Stripe Billing</span>
-                </div>
-                <div className="flex items-center gap-2 text-xs text-gray-500">
-                  <ShieldCheck className="h-3.5 w-3.5 text-gray-400" />
-                  <span>Cancel Anytime</span>
-                </div>
-                <div className="flex items-center gap-2 text-xs text-gray-500">
-                  <BadgeCheck className="h-3.5 w-3.5 text-gray-400" />
-                  <span>No Setup Fees</span>
-                </div>
-                <div className="flex items-center gap-2 text-xs text-gray-500">
-                  <Database className="h-3.5 w-3.5 text-gray-400" />
-                  <span>Your Data, Encrypted</span>
-                </div>
-              </div>
+            <div className="space-y-4 text-gray-700 leading-relaxed">
+              <h2 className="text-2xl font-bold text-gray-900">Why I built TankGuard</h2>
+              <p>
+                I spent a year reading every underground storage tank regulation I could find —
+                federal 40 CFR Part 280 cover to cover, then the corresponding chapter in each of
+                the fifty state codes, then the implementing agency guidance documents, then the
+                inspection checklists. What started as research for a different product turned
+                into roughly 1,500 individually-coded compliance rules, each tagged with the tank
+                equipment type it applies to, the cadence, and the specific statute citation.
+              </p>
+              <p>
+                I kept going because every operator I talked to — the ones running three gas
+                stations in north Florida, the ones running twelve in east Texas — had the same
+                story. Somebody handed them a paper checklist once, they lost it, and the next
+                inspector showed up asking for a release-detection record they didn&rsquo;t
+                realize they were supposed to keep. TankGuard is what I wish those operators had
+                on day one: every deadline in every jurisdiction, already scheduled against their
+                tanks, surfaced 90 days before it&rsquo;s due. Ship the knowledge, not a PDF.
+              </p>
             </div>
           </div>
         </div>

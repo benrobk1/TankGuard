@@ -12,14 +12,85 @@ function createTransporter() {
   });
 }
 
-export async function sendEmail(to: string, subject: string, html: string) {
+/**
+ * CAN-SPAM-compliant footer appended to every transactional email.
+ *
+ * Requires two env vars to be set for production sends:
+ *   SAASTUDIO_MAILING_ADDRESS — single-line postal address of record
+ *   NEXT_PUBLIC_APP_URL       — used to build the unsubscribe link
+ *
+ * If SAASTUDIO_MAILING_ADDRESS is missing and NODE_ENV is production, we
+ * throw instead of rendering a placeholder. This is an intentional hard
+ * fail: shipping transactional mail without a physical postal address is
+ * a CAN-SPAM violation and we will not let a deploy do that by accident.
+ */
+function emailFooter(unsubscribeToken?: string): string {
+  const address = process.env.SAASTUDIO_MAILING_ADDRESS;
+  if (!address) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error(
+        'SAASTUDIO_MAILING_ADDRESS is required for transactional email. ' +
+          'Set the env var to the postal address registered to Saastudio LLC ' +
+          'before sending.',
+      );
+    }
+    // In dev/test we surface the gap but still render something, so local
+    // mail previews work.
+    console.warn(
+      '[email] SAASTUDIO_MAILING_ADDRESS not set — rendering footer without postal address. Production sends will fail.',
+    );
+  }
+
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://tankguard.com';
+  const unsubUrl = unsubscribeToken
+    ? `${baseUrl}/unsubscribe?token=${encodeURIComponent(unsubscribeToken)}`
+    : `${baseUrl}/dashboard/settings#email-preferences`;
+
+  return `
+    <hr style="border:none;border-top:1px solid #e5e7eb;margin:32px 0 16px;" />
+    <div style="font-size:12px;color:#6b7280;line-height:1.6;">
+      <p style="margin:0 0 8px;">
+        — Ben Kurz<br/>
+        Founder, Saastudio LLC
+      </p>
+      <p style="margin:0 0 8px;">
+        ${address ?? '[Mailing address not configured — see SAASTUDIO_MAILING_ADDRESS env var]'}
+      </p>
+      <p style="margin:0;">
+        You are receiving this email because you have an active TankGuard account.
+        <a href="${unsubUrl}" style="color:#2563eb;text-decoration:underline;">Unsubscribe or update preferences</a>.
+      </p>
+    </div>
+  `;
+}
+
+export interface SendEmailOptions {
+  /**
+   * Per-recipient unsubscribe token. Generate at send time and persist so
+   * /unsubscribe can validate it. Passing undefined falls back to the
+   * authenticated email-preferences page, which still satisfies CAN-SPAM
+   * for transactional mail but not for marketing sends.
+   */
+  unsubscribeToken?: string;
+}
+
+export async function sendEmail(
+  to: string,
+  subject: string,
+  html: string,
+  options: SendEmailOptions = {},
+) {
   const transporter = createTransporter();
+
+  // Append the signature/footer to every send. Callers should no longer
+  // include "— The TankGuard Team" sign-offs in their templates.
+  const htmlWithFooter = html + emailFooter(options.unsubscribeToken);
 
   return transporter.sendMail({
     from: process.env.FROM_EMAIL,
     to,
     subject,
-    html,
+    html: htmlWithFooter,
   });
 }
 
@@ -38,7 +109,6 @@ export async function sendPasswordResetEmail(email: string, resetUrl: string) {
       <p style="color:#6b7280;font-size:13px;">Or copy and paste this link into your browser:<br/><span style="word-break:break-all;">${resetUrl}</span></p>
       <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;" />
       <p style="color:#6b7280;font-size:13px;">If you didn't request a password reset, you can safely ignore this email — your password will remain unchanged.</p>
-      <p>— The TankGuard Team</p>
     </div>
   `;
 
@@ -58,7 +128,6 @@ export async function sendWelcomeEmail(email: string, name: string) {
         <li>Receive timely reminders before deadlines</li>
       </ol>
       <p>If you have any questions, simply reply to this email.</p>
-      <p>— The TankGuard Team</p>
     </div>
   `;
 
@@ -131,7 +200,6 @@ export async function sendComplianceReminder(
       ${criticalHtml}
       ${standardHtml}
       <p>Log in to TankGuard to mark items complete or upload documentation.</p>
-      <p>— The TankGuard Team</p>
     </div>
   `;
 
@@ -177,7 +245,6 @@ export async function sendWeeklyDigest(
         </tr>
       </table>
       <p>Log in to TankGuard to view full details and take action on upcoming items.</p>
-      <p>— The TankGuard Team</p>
     </div>
   `;
 
@@ -229,7 +296,6 @@ export async function sendOverdueAlert(
         </tr>
       </table>
       <p>Failure to complete compliance items on time may result in regulatory penalties. Please take action immediately.</p>
-      <p>— The TankGuard Team</p>
     </div>
   `;
 
