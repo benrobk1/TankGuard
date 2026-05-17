@@ -85,6 +85,11 @@ model Customer {
   phone             String?
   stripeCustomerId  String?  @unique @map("stripe_customer_id")
   stripeSubscriptionId String? @unique @map("stripe_subscription_id")
+  // Pricing tier the active subscription is billed against. STARTER/GROWTH/SCALE
+  // map to the live Stripe products (TG Essentials/Pro/Enterprise). LEGACY is
+  // reserved for grandfathered customers still on the archived single-price
+  // STRIPE_PRICE_ID. Nullable so historical rows backfill cleanly.
+  tier              Tier?    @default(STARTER)
   facilityCount     Int      @default(0) @map("facility_count")
   status            CustomerStatus @default(PENDING)
   onboardingStep    Int      @default(1) @map("onboarding_step")
@@ -105,6 +110,13 @@ enum CustomerStatus {
   PAST_DUE
   CANCELLED
   SUSPENDED
+}
+
+enum Tier {
+  STARTER  // TankGuard Essentials, $99/mo,  1 facility
+  GROWTH   // TankGuard Pro,        $499/mo, up to 10 facilities
+  SCALE    // TankGuard Enterprise, $1,499/mo, up to 50 facilities
+  LEGACY   // Grandfathered customers on the archived STRIPE_PRICE_ID single plan
 }
 
 model Facility {
