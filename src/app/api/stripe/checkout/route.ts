@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
-import { createCheckoutSession } from '@/lib/stripe';
+import { createCheckoutSession, isPricingTier } from '@/lib/stripe';
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
     const session = await getSession();
     if (!session) {
@@ -14,9 +14,20 @@ export async function POST() {
       return NextResponse.json({ error: 'No customer profile' }, { status: 400 });
     }
 
+    let tier: 'starter' | 'growth' | 'scale' = 'starter';
+    try {
+      const body = await request.json().catch(() => ({}));
+      if (isPricingTier(body?.tier)) {
+        tier = body.tier;
+      }
+    } catch {
+      // Body is optional; fall back to starter.
+    }
+
     const checkoutSession = await createCheckoutSession(
       customer.id,
       customer.email,
+      tier,
     );
 
     return NextResponse.json({ url: checkoutSession.url });

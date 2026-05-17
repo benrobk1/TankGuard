@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { CheckCircle, Shield, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert } from '@/components/ui/alert';
+import { TIERS, TIER_ORDER, type PricingTier } from '@/lib/stripe';
 
 function SubscribePageContent() {
   const router = useRouter();
@@ -14,6 +15,7 @@ function SubscribePageContent() {
   const [error, setError] = useState('');
   const [checking, setChecking] = useState(true);
   const [activating, setActivating] = useState(false);
+  const [selectedTier, setSelectedTier] = useState<PricingTier>('growth');
 
   const pollForActive = useCallback(() => {
     setActivating(true);
@@ -44,7 +46,6 @@ function SubscribePageContent() {
     return () => clearInterval(interval);
   }, [router]);
 
-  // Check auth status on mount
   useEffect(() => {
     async function checkStatus() {
       try {
@@ -60,13 +61,11 @@ function SubscribePageContent() {
           return;
         }
 
-        // Already active — redirect appropriately
         if (customer.status === 'ACTIVE') {
           router.push(customer.onboardingComplete ? '/dashboard' : '/onboarding');
           return;
         }
 
-        // Coming back from Stripe success — poll until webhook activates
         if (checkoutResult === 'success' && customer.status === 'PENDING') {
           setChecking(false);
           pollForActive();
@@ -81,11 +80,15 @@ function SubscribePageContent() {
     checkStatus();
   }, [router, checkoutResult, pollForActive]);
 
-  async function startCheckout() {
+  async function startCheckout(tier: PricingTier) {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('/api/stripe/checkout', { method: 'POST' });
+      const res = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tier }),
+      });
       const data = await res.json();
       if (data.url) {
         window.location.href = data.url;
@@ -107,7 +110,6 @@ function SubscribePageContent() {
     );
   }
 
-  // Post-payment activation screen
   if (activating) {
     return (
       <div className="w-full max-w-lg mx-auto">
@@ -128,69 +130,78 @@ function SubscribePageContent() {
   }
 
   return (
-    <div className="w-full max-w-lg mx-auto">
-      <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-        {/* Header */}
-        <div className="bg-blue-600 px-6 py-8 text-center text-white">
-          <div className="flex justify-center mb-3">
-            <Shield className="h-10 w-10" />
-          </div>
-          <h1 className="text-2xl font-bold">Activate TankGuard</h1>
-          <p className="mt-2 text-blue-100">Subscribe to start tracking your UST compliance</p>
+    <div className="w-full max-w-5xl mx-auto px-4">
+      <div className="text-center mb-8">
+        <div className="flex justify-center mb-3">
+          <Shield className="h-10 w-10 text-blue-600" />
         </div>
-
-        <div className="p-6 space-y-6">
-          {error && <Alert variant="error">{error}</Alert>}
-
-          {checkoutResult === 'cancelled' && (
-            <Alert variant="error">Checkout was cancelled. You can try again below.</Alert>
-          )}
-
-          {/* Pricing */}
-          <div className="text-center">
-            <div className="flex items-baseline justify-center gap-1">
-              <span className="text-4xl font-bold text-gray-900">$99</span>
-              <span className="text-gray-500">/month</span>
-            </div>
-            <p className="text-sm text-gray-500 mt-1">Cancel anytime &middot; No setup fee &middot; No contracts</p>
-          </div>
-
-          {/* Features */}
-          <div className="bg-gray-50 rounded-lg p-5">
-            <h3 className="font-semibold text-gray-900 mb-3 text-sm">Everything included:</h3>
-            <ul className="space-y-2.5 text-sm text-gray-600">
-              {[
-                'Unlimited facilities & tanks',
-                'All 50 states + federal EPA rules',
-                'Escalating email reminders',
-                'Document vault with unlimited storage',
-                'Audit-ready compliance reports',
-                'Compliance calendar',
-                'Weekly digest emails',
-              ].map(f => (
-                <li key={f} className="flex items-center gap-2.5">
-                  <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />
-                  {f}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Guarantee */}
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-sm text-green-800">
-            <strong>Our Guarantee:</strong> If TankGuard misses a compliance deadline that results in a fine, we refund 12 months of subscription fees.
-          </div>
-
-          {/* CTA */}
-          <Button className="w-full" size="lg" onClick={startCheckout} loading={loading}>
-            Subscribe Now &mdash; $99/month <ChevronRight className="h-4 w-4 ml-2" />
-          </Button>
-
-          <p className="text-xs text-gray-400 text-center">
-            Secure payment powered by Stripe. You&apos;ll set up your facilities after subscribing.
-          </p>
-        </div>
+        <h1 className="text-3xl font-bold text-gray-900">Choose your plan</h1>
+        <p className="mt-2 text-gray-500">
+          Pick a tier that fits your site count. You can upgrade or downgrade any time.
+        </p>
       </div>
+
+      {error && <div className="mb-6"><Alert variant="error">{error}</Alert></div>}
+      {checkoutResult === 'cancelled' && (
+        <div className="mb-6"><Alert variant="error">Checkout was cancelled. You can try again below.</Alert></div>
+      )}
+
+      <div className="grid gap-6 md:grid-cols-3">
+        {TIER_ORDER.map((tierKey) => {
+          const tier = TIERS[tierKey];
+          const isRecommended = tier.id === 'growth';
+          const isSelected = selectedTier === tier.id;
+          return (
+            <button
+              key={tier.id}
+              type="button"
+              onClick={() => setSelectedTier(tier.id)}
+              className={`relative text-left rounded-xl border-2 bg-white p-6 transition-shadow hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                isSelected ? 'border-blue-600 shadow-md' : 'border-gray-200'
+              }`}
+              aria-pressed={isSelected}
+            >
+              {isRecommended && (
+                <span className="absolute -top-3 left-6 text-xs font-semibold uppercase tracking-wide rounded-full bg-blue-600 px-3 py-1 text-white">
+                  Most Popular
+                </span>
+              )}
+              <h2 className="text-lg font-semibold text-gray-900">{tier.displayName}</h2>
+              <p className="mt-2">
+                <span className="text-4xl font-bold text-gray-900">
+                  ${tier.monthlyPriceUSD.toLocaleString()}
+                </span>
+                <span className="text-gray-500">/month</span>
+              </p>
+              <p className="mt-1 text-sm text-gray-500">
+                Up to {tier.maxSites} {tier.maxSites === 1 ? 'site' : 'sites'} &middot; {tier.supportLevel}
+              </p>
+              <ul className="mt-5 space-y-2 text-sm text-gray-600">
+                {tier.highlights.map((h) => (
+                  <li key={h} className="flex gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500 shrink-0 mt-0.5" />
+                    <span>{h}</span>
+                  </li>
+                ))}
+              </ul>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="mt-8 flex justify-center">
+        <Button size="lg" onClick={() => startCheckout(selectedTier)} loading={loading}>
+          Subscribe to {TIERS[selectedTier].displayName} &mdash; ${TIERS[selectedTier].monthlyPriceUSD.toLocaleString()}/mo
+          <ChevronRight className="h-4 w-4 ml-2" />
+        </Button>
+      </div>
+
+      <p className="mt-6 text-xs text-gray-500 text-center max-w-2xl mx-auto">
+        Secure payment powered by Stripe. If TankGuard fails to surface a properly-configured
+        compliance deadline at least 30 days in advance, we&rsquo;ll credit up to three months of
+        subscription fees as product credit. See the <a href="/terms" className="underline">Terms of Service</a> for
+        the full guarantee language and carve-outs.
+      </p>
     </div>
   );
 }
